@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Articles à Cendres - Vente Locale</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Boutique d'Articles à Cendres</h1>
+        <div id="user-actions">
+            <button id="login-btn">Connexion</button>
+            <button id="register-btn">Inscription</button>
+            <span id="user-greeting"></span>
+            <button id="logout-btn" style="display:none;">Déconnexion</button>
+        </div>
+    </header>
+
+    <main class="container">
+        <section id="products">
+            <h2>Nos Produits</h2>
+            <div class="product-grid" id="product-grid"></div>
+        </section>
+
+        <section id="cart">
+            <h2>Votre Panier</h2>
+            <div id="cart-items"></div>
+            <p id="cart-total">Total: 0€</p>
+            <button id="checkout-btn">Passer Commande</button>
+        </section>
+    </main>
+
+    <!-- Modal Connexion -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Connexion</h2>
+            <form id="login-form">
+                <input type="text" id="login-email" placeholder="Email" required>
+                <input type="password" id="login-password" placeholder="Mot de passe" required>
+                <button type="submit">Se connecter</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Inscription -->
+    <div id="register-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Inscription</h2>
+            <form id="register-form">
+                <input type="text" id="reg-name" placeholder="Nom complet" required>
+                <input type="email" id="reg-email" placeholder="Email" required>
+                <input type="password" id="reg-password" placeholder="Mot de passe" required>
+                <button type="submit">S'inscrire</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

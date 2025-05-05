@@ -574,6 +574,20 @@
             z-index: 9999;
             box-shadow: 0 0 20px rgba(0,0,0,0.3);
             animation: fadeIn 0.5s forwards;
+            max-width: 400px;
+        }
+        
+        #admin-notif .order-details {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+            font-size: 0.9em;
+        }
+        
+        #admin-notif .order-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
         }
         
         @keyframes fadeIn {
@@ -650,8 +664,9 @@
     
     <!-- Admin Notification -->
     <div id="admin-notif" style="display:none;">
-        <span id="notif-text"></span>
-        <button onclick="closeNotif()" style="margin-left:10px; background:none; border:none; color:white; cursor:pointer">×</button>
+        <div id="notif-text"></div>
+        <div class="order-details" id="order-details"></div>
+        <button onclick="closeNotif()" style="margin-top:10px; background:none; border:none; color:white; cursor:pointer">× Fermer</button>
     </div>
     
     <!-- Main App -->
@@ -847,8 +862,8 @@
             setupEventListeners();
             renderProducts();
             
-            // Vérifier les nouvelles commandes toutes les 5 secondes
-            setInterval(checkForNewOrders, 5000);
+            // Vérifier les nouvelles commandes toutes les 3 secondes (plus rapide pour la démo)
+            setInterval(checkForNewOrders, 3000);
         }
         
         // Configuration des écouteurs d'événements
@@ -958,34 +973,49 @@
             );
             
             if(newOrders.length > 0) {
-                const names = [...new Set(newOrders.map(order => order.user))];
-                let message = `${newOrders.length} nouvelle(s) commande(s)`;
-                
-                if(names.length === 1) {
-                    message += ` de ${names[0]}`;
-                } else if(names.length > 1) {
-                    message += ` de ${names.slice(0, -1).join(', ')} et ${names.slice(-1)[0]}`;
-                }
-                
-                showNotification(message);
+                newOrders.forEach(order => {
+                    showOrderNotification(order);
+                });
                 localStorage.setItem('lastNotified', Date.now());
             }
         }
         
-        // Afficher une notification
-        function showNotification(message) {
+        // Afficher une notification pour une commande spécifique
+        function showOrderNotification(order) {
             const notif = document.getElementById('admin-notif');
-            document.getElementById('notif-text').textContent = message;
+            const notifText = document.getElementById('notif-text');
+            const orderDetails = document.getElementById('order-details');
+            
+            notifText.innerHTML = `<strong>Nouvelle commande de ${order.user}</strong>`;
+            
+            let detailsHTML = '<div class="order-details">';
+            detailsHTML += `<div>Total: ${order.total.toFixed(2)}€</div>`;
+            detailsHTML += '<div>Articles:</div>';
+            
+            order.items.forEach(item => {
+                detailsHTML += `
+                    <div class="order-item">
+                        <span>${item.name} x${item.quantity}</span>
+                        <span>${(item.price * item.quantity).toFixed(2)}€</span>
+                    </div>
+                `;
+            });
+            
+            detailsHTML += `<div>Date: ${new Date(order.date).toLocaleString()}</div>`;
+            detailsHTML += '</div>';
+            
+            orderDetails.innerHTML = detailsHTML;
+            
             notif.style.display = 'block';
             notif.style.animation = 'fadeIn 0.5s forwards';
             
-            // Disparaît après 5s
+            // Disparaît après 8s (plus long pour permettre la lecture)
             setTimeout(() => {
                 notif.style.animation = 'fadeOut 0.5s forwards';
                 setTimeout(() => {
                     notif.style.display = 'none';
                 }, 500);
-            }, 5000);
+            }, 8000);
         }
         
         // Fermer la notification

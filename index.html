@@ -415,6 +415,157 @@
             transform: translateY(-3px);
             box-shadow: 0 5px 15px rgba(233, 69, 96, 0.4);
         }
+
+        /* Checkout Modal */
+        .checkout-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 2rem 0;
+        }
+        
+        .checkout-container {
+            background: var(--secondary-bg);
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            border-radius: 10px;
+            position: relative;
+            animation: slideUp 0.5s ease;
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .close-checkout {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 2rem;
+            cursor: pointer;
+        }
+        
+        .checkout-grid {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 2rem;
+        }
+        
+        .checkout-form input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #444;
+            border-radius: 5px;
+            color: var(--text);
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .form-row input {
+            flex: 1;
+        }
+        
+        .payment-methods {
+            margin: 1.5rem 0;
+        }
+        
+        .payment-method {
+            display: block;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            margin-bottom: 0.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .payment-method input {
+            margin-right: 10px;
+        }
+        
+        .payment-details {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            border-radius: 5px;
+            margin-top: 1rem;
+        }
+        
+        .order-summary {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1.5rem;
+            border-radius: 10px;
+            position: sticky;
+            top: 1rem;
+        }
+        
+        .order-items {
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 1rem 0;
+        }
+        
+        .checkout-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #444;
+        }
+        
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+        }
+        
+        .grand-total {
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 2px solid var(--accent);
+        }
+        
+        .confirm-payment {
+            width: 100%;
+            padding: 15px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .confirm-payment:hover {
+            background: #ff2d55;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(233, 69, 96, 0.4);
+        }
+        
+        @media (max-width: 768px) {
+            .checkout-grid {
+                grid-template-columns: 1fr;
+            }
+        }
         
         /* Animations */
         @keyframes slideIn {
@@ -507,7 +658,82 @@
                         <span>Total:</span>
                         <span id="cartTotal">0€</span>
                     </div>
-                    <button class="checkout-btn">Passer la commande</button>
+                    <button class="checkout-btn" id="checkoutButton">Passer la commande</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Checkout Modal -->
+    <div class="checkout-modal" id="checkoutModal">
+        <div class="checkout-container">
+            <button class="close-checkout">&times;</button>
+            <h2>Finaliser votre commande</h2>
+            
+            <div class="checkout-grid">
+                <!-- Colonne gauche - Info livraison/paiement -->
+                <div class="checkout-form">
+                    <h3>Informations de livraison</h3>
+                    <form id="deliveryForm">
+                        <input type="text" placeholder="Nom complet" required>
+                        <input type="text" placeholder="Adresse" required>
+                        <input type="text" placeholder="Complément d'adresse">
+                        <div class="form-row">
+                            <input type="text" placeholder="Code postal" required>
+                            <input type="text" placeholder="Ville" required>
+                        </div>
+                        <input type="tel" placeholder="Téléphone" required>
+                        
+                        <h3>Méthode de paiement</h3>
+                        <div class="payment-methods">
+                            <label class="payment-method">
+                                <input type="radio" name="payment" checked>
+                                <span>Carte bancaire</span>
+                            </label>
+                            <label class="payment-method">
+                                <input type="radio" name="payment">
+                                <span>PayPal</span>
+                            </label>
+                            <label class="payment-method">
+                                <input type="radio" name="payment">
+                                <span>Paiement à la livraison</span>
+                            </label>
+                        </div>
+                        
+                        <div id="cardDetails" class="payment-details">
+                            <div class="form-row">
+                                <input type="text" placeholder="Numéro de carte" required>
+                                <input type="text" placeholder="CVV" required>
+                            </div>
+                            <div class="form-row">
+                                <input type="text" placeholder="MM/AA" required>
+                                <input type="text" placeholder="Titulaire de la carte" required>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Colonne droite - Récap commande -->
+                <div class="order-summary">
+                    <h3>Votre commande</h3>
+                    <div class="order-items" id="checkoutItems">
+                        <!-- Items dynamiques -->
+                    </div>
+                    <div class="order-totals">
+                        <div class="total-row">
+                            <span>Sous-total</span>
+                            <span id="subtotal">0€</span>
+                        </div>
+                        <div class="total-row">
+                            <span>Livraison</span>
+                            <span>4.99€</span>
+                        </div>
+                        <div class="total-row grand-total">
+                            <span>Total</span>
+                            <span id="grandTotal">0€</span>
+                        </div>
+                    </div>
+                    <button class="confirm-payment">Payer maintenant</button>
                 </div>
             </div>
         </div>
@@ -578,13 +804,11 @@
         const cartBtn = document.getElementById('cartBtn');
         const homeBtn = document.getElementById('homeBtn');
         const logoutBtn = document.getElementById('logoutBtn');
+        const checkoutButton = document.getElementById('checkoutButton');
+        const checkoutModal = document.getElementById('checkoutModal');
         
         // Initialisation
         function init() {
-            // Simuler un utilisateur connecté pour le démo
-            // currentUser = { name: "Test User", email: "test@example.com" };
-            // showApp();
-            
             setupEventListeners();
             renderProducts();
         }
@@ -640,6 +864,23 @@
             homeBtn.addEventListener('click', showHomePage);
             cartBtn.addEventListener('click', showCartPage);
             logoutBtn.addEventListener('click', logout);
+            
+            // Checkout
+            checkoutButton.addEventListener('click', showCheckoutModal);
+            document.querySelector('.close-checkout').addEventListener('click', closeCheckoutModal);
+            document.querySelector('.confirm-payment').addEventListener('click', confirmPayment);
+            
+            // Gérer l'affichage des détails de carte
+            document.querySelectorAll('input[name="payment"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const cardDetails = document.getElementById('cardDetails');
+                    if (this.parentNode.textContent.includes("Carte bancaire")) {
+                        cardDetails.style.display = 'block';
+                    } else {
+                        cardDetails.style.display = 'none';
+                    }
+                });
+            });
         }
         
         // Afficher l'application
@@ -660,6 +901,57 @@
             homePage.style.display = 'none';
             cartPage.style.display = 'block';
             renderCart();
+        }
+        
+        // Afficher le modal de paiement
+        function showCheckoutModal() {
+            if (cart.length === 0) {
+                alert("Votre panier est vide !");
+                return;
+            }
+            
+            checkoutModal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+            
+            // Remplir le récapitulatif
+            const checkoutItems = document.getElementById('checkoutItems');
+            checkoutItems.innerHTML = '';
+            
+            let subtotal = 0;
+            
+            cart.forEach(item => {
+                const itemElement = document.createElement('div');
+                itemElement.className = 'checkout-item';
+                itemElement.innerHTML = `
+                    <span>${item.name} x${item.quantity}</span>
+                    <span>${(item.price * item.quantity).toFixed(2)}€</span>
+                `;
+                checkoutItems.appendChild(itemElement);
+                
+                subtotal += item.price * item.quantity;
+            });
+            
+            document.getElementById('subtotal').textContent = subtotal.toFixed(2) + '€';
+            document.getElementById('grandTotal').textContent = (subtotal + 4.99).toFixed(2) + '€';
+        }
+        
+        // Fermer le modal de paiement
+        function closeCheckoutModal() {
+            checkoutModal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Confirmer le paiement
+        function confirmPayment() {
+            alert('Paiement effectué ! Merci pour votre commande.');
+            
+            // Vider le panier
+            cart = [];
+            updateCartUI();
+            
+            // Fermer le modal et retourner à l'accueil
+            closeCheckoutModal();
+            showHomePage();
         }
         
         // Déconnexion

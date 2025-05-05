@@ -560,10 +560,38 @@
             transform: translateY(-3px);
             box-shadow: 0 5px 15px rgba(233, 69, 96, 0.4);
         }
+
+        /* Admin Notification */
+        #admin-notif {
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--accent);
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            z-index: 9999;
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+            animation: fadeIn 0.5s forwards;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-20px); }
+        }
         
         @media (max-width: 768px) {
             .checkout-grid {
                 grid-template-columns: 1fr;
+            }
+            #admin-notif {
+                width: calc(100% - 40px);
             }
         }
         
@@ -618,6 +646,12 @@
                 <button type="submit">S'inscrire</button>
             </form>
         </div>
+    </div>
+    
+    <!-- Admin Notification -->
+    <div id="admin-notif" style="display:none;">
+        <span id="notif-text"></span>
+        <button onclick="closeNotif()" style="margin-left:10px; background:none; border:none; color:white; cursor:pointer">×</button>
     </div>
     
     <!-- Main App -->
@@ -789,6 +823,7 @@
         // État de l'application
         let currentUser = null;
         let cart = [];
+        let isAdmin = false;
         
         // DOM Elements
         const authContainer = document.getElementById('authContainer');
@@ -811,6 +846,9 @@
         function init() {
             setupEventListeners();
             renderProducts();
+            
+            // Vérifier les nouvelles commandes toutes les 5 secondes
+            setInterval(checkForNewOrders, 5000);
         }
         
         // Configuration des écouteurs d'événements
@@ -840,6 +878,12 @@
                     name: email.split('@')[0], 
                     email: email 
                 };
+                
+                // Vérifier si c'est l'admin
+                if(email === "admin@ashstore.com") {
+                    isAdmin = true;
+                    document.getElementById('admin-notif').style.display = 'block';
+                }
                 
                 showApp();
             });
@@ -881,6 +925,57 @@
                     }
                 });
             });
+        }
+        
+        // Vérifier les nouvelles commandes
+        function checkForNewOrders() {
+            if(!isAdmin) return;
+            
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]';
+            const lastNotified = localStorage.getItem('lastNotified') || 0;
+            
+            const newOrders = orders.filter(order => 
+                new Date(order.date).getTime() > lastNotified
+            );
+            
+            if(newOrders.length > 0) {
+                const names = [...new Set(newOrders.map(order => order.user))];
+                let message = `${newOrders.length} nouvelle(s) commande(s)`;
+                
+                if(names.length === 1) {
+                    message += ` de ${names[0]}`;
+                } else if(names.length > 1) {
+                    message += ` de ${names.slice(0, -1).join(', ')} et ${names.slice(-1)[0]}`;
+                }
+                
+                showNotification(message);
+                localStorage.setItem('lastNotified', Date.now());
+            }
+        }
+        
+        // Afficher une notification
+        function showNotification(message) {
+            const notif = document.getElementById('admin-notif');
+            document.getElementById('notif-text').textContent = message;
+            notif.style.display = 'block';
+            notif.style.animation = 'fadeIn 0.5s forwards';
+            
+            // Disparaît après 5s
+            setTimeout(() => {
+                notif.style.animation = 'fadeOut 0.5s forwards';
+                setTimeout(() => {
+                    notif.style.display = 'none';
+                }, 500);
+            }, 5000);
+        }
+        
+        // Fermer la notification
+        function closeNotif() {
+            const notif = document.getElementById('admin-notif');
+            notif.style.animation = 'fadeOut 0.5s forwards';
+            setTimeout(() => {
+                notif.style.display = 'none';
+            }, 500);
         }
         
         // Afficher l'application
@@ -943,6 +1038,18 @@
         
         // Confirmer le paiement
         function confirmPayment() {
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            const newOrder = {
+                id: Date.now(),
+                user: currentUser.name,
+                items: [...cart],
+                date: new Date().toISOString(),
+                total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + 4.99
+            };
+            
+            orders.push(newOrder);
+            localStorage.setItem('orders', JSON.stringify(orders));
+            
             alert('Paiement effectué ! Merci pour votre commande.');
             
             // Vider le panier
@@ -957,6 +1064,7 @@
         // Déconnexion
         function logout() {
             currentUser = null;
+            isAdmin = false;
             authContainer.classList.remove('hidden');
             appContainer.classList.remove('active');
             

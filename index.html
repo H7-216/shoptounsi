@@ -620,9 +620,28 @@
             font-size: 0.9rem;
         }
         
+        .notification-alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--accent);
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            z-index: 9999;
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+            animation: fadeIn 0.5s forwards;
+            max-width: 300px;
+        }
+        
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-10px); }
         }
         
         @media (max-width: 768px) {
@@ -696,14 +715,15 @@
             <div class="nav-buttons">
                 <button class="nav-button" id="homeBtn">Accueil</button>
                 <button class="nav-button cart-btn" id="cartBtn" data-count="0">Panier</button>
-                <button class="nav-button notif-btn" id="notifBtn" data-count="0">
+                <!-- Le bouton notification ne sera visible que pour l'admin -->
+                <button class="nav-button notif-btn" id="notifBtn" data-count="0" style="display: none;">
                     <i class="fas fa-bell"></i>
                 </button>
                 <button class="nav-button" id="logoutBtn">Déconnexion</button>
             </div>
         </header>
         
-        <!-- Notifications Panel -->
+        <!-- Notifications Panel (visible seulement pour admin) -->
         <div class="notifications-panel" id="notificationsPanel">
             <div class="notification-header">
                 <h3>Notifications</h3>
@@ -901,7 +921,6 @@
         function init() {
             setupEventListeners();
             renderProducts();
-            updateNotificationsUI();
             
             // Vérifier les nouvelles commandes toutes les 3 secondes
             setInterval(checkForNewOrders, 3000);
@@ -936,6 +955,9 @@
                         email: email 
                     };
                     isAdmin = true;
+                    // Afficher le bouton notification seulement pour l'admin
+                    notifBtn.style.display = 'block';
+                    updateNotificationsUI();
                     showApp();
                     return;
                 }
@@ -947,6 +969,8 @@
                         email: email 
                     };
                     isAdmin = false;
+                    // Cacher le bouton notification pour les autres utilisateurs
+                    notifBtn.style.display = 'none';
                     showApp();
                 } else {
                     alert("Veuillez entrer un email et un mot de passe valides");
@@ -972,6 +996,8 @@
                         email: email 
                     };
                     isAdmin = false;
+                    // Cacher le bouton notification pour les autres utilisateurs
+                    notifBtn.style.display = 'none';
                     showApp();
                 } else {
                     alert("Veuillez remplir tous les champs");
@@ -1005,6 +1031,8 @@
         
         // Afficher/masquer les notifications
         function toggleNotifications() {
+            if (!isAdmin) return;
+            
             notificationsPanel.classList.toggle('active');
             if (notificationsPanel.classList.contains('active')) {
                 markNotificationsAsRead();
@@ -1022,6 +1050,8 @@
         // Effacer toutes les notifications
         function clearNotifications() {
             notifications = [];
+            unreadNotifications = 0;
+            updateNotificationCounter();
             localStorage.setItem('notifications', JSON.stringify(notifications));
             updateNotificationsUI();
         }
@@ -1034,7 +1064,8 @@
             const lastNotified = localStorage.getItem('lastNotified') || 0;
             
             const newOrders = orders.filter(order => 
-                new Date(order.date).getTime() > lastNotified
+                new Date(order.date).getTime() > lastNotified && 
+                order.user !== "Admin" // Ne pas notifier l'admin de ses propres commandes
             );
             
             if(newOrders.length > 0) {
@@ -1051,7 +1082,7 @@
                 id: Date.now(),
                 type: 'order',
                 user: order.user,
-                items: order.items,
+                items: [...order.items],
                 total: order.total,
                 date: order.date,
                 read: false
@@ -1065,33 +1096,49 @@
             updateNotificationsUI();
             
             // Afficher une alerte visuelle
-            if (!notificationsPanel.classList.contains('active')) {
-                showNotificationAlert(newNotification);
-            }
+            showNotificationAlert(newNotification);
         }
         
         // Afficher une alerte visuelle pour nouvelle notification
         function showNotificationAlert(notification) {
+            // Créer une div pour l'alerte
             const alertDiv = document.createElement('div');
             alertDiv.className = 'notification-alert';
+            
+            // Créer le contenu de la notification
+            let itemsList = '';
+            notification.items.forEach(item => {
+                itemsList += `<div>${item.name} x${item.quantity} - ${(item.price * item.quantity).toFixed(2)}€</div>`;
+            });
+            
             alertDiv.innerHTML = `
-                <div>Nouvelle commande de ${notification.user}</div>
+                <div><strong>Nouvelle commande de ${notification.user}</strong></div>
+                ${itemsList}
                 <div>Total: ${notification.total.toFixed(2)}€</div>
+                <div>${new Date(notification.date).toLocaleString()}</div>
             `;
+            
             document.body.appendChild(alertDiv);
             
+            // Supprimer l'alerte après 5 secondes
             setTimeout(() => {
-                alertDiv.remove();
-            }, 3000);
+                alertDiv.style.animation = 'fadeOut 0.5s forwards';
+                setTimeout(() => {
+                    alertDiv.remove();
+                }, 500);
+            }, 5000);
         }
         
         // Mettre à jour le compteur de notifications
         function updateNotificationCounter() {
+            if (!isAdmin) return;
             notifBtn.setAttribute('data-count', unreadNotifications);
         }
         
         // Mettre à jour l'interface des notifications
         function updateNotificationsUI() {
+            if (!isAdmin) return;
+            
             notificationsList.innerHTML = '';
             
             if (notifications.length === 0) {
@@ -1103,6 +1150,7 @@
                 const notifElement = document.createElement('div');
                 notifElement.className = `notification-item ${notification.read ? '' : 'unread'}`;
                 
+                // Créer la liste des articles
                 let itemsHTML = '';
                 notification.items.forEach(item => {
                     itemsHTML += `<div>${item.name} x${item.quantity} - ${(item.price * item.quantity).toFixed(2)}€</div>`;
@@ -1110,8 +1158,8 @@
                 
                 notifElement.innerHTML = `
                     <div><strong>Nouvelle commande de ${notification.user}</strong></div>
-                    <div>Total: ${notification.total.toFixed(2)}€</div>
                     ${itemsHTML}
+                    <div>Total: ${notification.total.toFixed(2)}€</div>
                     <div class="notification-time">${new Date(notification.date).toLocaleString()}</div>
                 `;
                 
@@ -1190,11 +1238,6 @@
             
             orders.push(newOrder);
             localStorage.setItem('orders', JSON.stringify(orders));
-            
-            // Si admin, ne pas s'envoyer de notification à soi-même
-            if (!isAdmin) {
-                addNewNotification(newOrder);
-            }
             
             alert('Paiement effectué ! Merci pour votre commande.');
             

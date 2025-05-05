@@ -158,6 +158,7 @@
         .nav-buttons {
             display: flex;
             gap: 1rem;
+            align-items: center;
         }
         
         .nav-button {
@@ -175,7 +176,8 @@
             color: var(--accent);
         }
         
-        .nav-button.cart-btn::after {
+        .nav-button.cart-btn::after,
+        .nav-button.notif-btn::after {
             content: attr(data-count);
             position: absolute;
             top: -5px;
@@ -561,51 +563,76 @@
             box-shadow: 0 5px 15px rgba(233, 69, 96, 0.4);
         }
 
-        /* Admin Notification */
-        #admin-notif {
+        /* Notifications Panel */
+        .notifications-panel {
             display: none;
             position: fixed;
-            top: 20px;
+            top: 80px;
             right: 20px;
-            background: var(--accent);
-            color: white;
-            padding: 15px;
-            border-radius: 5px;
-            z-index: 9999;
-            box-shadow: 0 0 20px rgba(0,0,0,0.3);
-            animation: fadeIn 0.5s forwards;
-            max-width: 400px;
+            background: var(--secondary-bg);
+            width: 350px;
+            max-height: 500px;
+            overflow-y: auto;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            z-index: 999;
+            animation: fadeIn 0.3s ease;
         }
         
-        #admin-notif .order-details {
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid rgba(255,255,255,0.2);
-            font-size: 0.9em;
+        .notifications-panel.active {
+            display: block;
         }
         
-        #admin-notif .order-item {
+        .notification-header {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
             display: flex;
             justify-content: space-between;
-            margin-bottom: 5px;
+            align-items: center;
+        }
+        
+        .notification-item {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .notification-item:hover {
+            background: rgba(255,255,255,0.05);
+        }
+        
+        .notification-item.unread {
+            background: rgba(233, 69, 96, 0.1);
+        }
+        
+        .notification-time {
+            font-size: 0.8rem;
+            color: #aaa;
+            margin-top: 5px;
+        }
+        
+        .clear-notifications {
+            background: none;
+            border: none;
+            color: var(--accent);
+            cursor: pointer;
+            font-size: 0.9rem;
         }
         
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
+            from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes fadeOut {
-            from { opacity: 1; transform: translateY(0); }
-            to { opacity: 0; transform: translateY(-20px); }
         }
         
         @media (max-width: 768px) {
             .checkout-grid {
                 grid-template-columns: 1fr;
             }
-            #admin-notif {
+            .notifications-panel {
                 width: calc(100% - 40px);
+                right: 20px;
+                left: 20px;
             }
         }
         
@@ -662,13 +689,6 @@
         </div>
     </div>
     
-    <!-- Admin Notification -->
-    <div id="admin-notif" style="display:none;">
-        <div id="notif-text"></div>
-        <div class="order-details" id="order-details"></div>
-        <button onclick="closeNotif()" style="margin-top:10px; background:none; border:none; color:white; cursor:pointer">× Fermer</button>
-    </div>
-    
     <!-- Main App -->
     <div class="app-container" id="appContainer">
         <header>
@@ -676,9 +696,23 @@
             <div class="nav-buttons">
                 <button class="nav-button" id="homeBtn">Accueil</button>
                 <button class="nav-button cart-btn" id="cartBtn" data-count="0">Panier</button>
+                <button class="nav-button notif-btn" id="notifBtn" data-count="0">
+                    <i class="fas fa-bell"></i>
+                </button>
                 <button class="nav-button" id="logoutBtn">Déconnexion</button>
             </div>
         </header>
+        
+        <!-- Notifications Panel -->
+        <div class="notifications-panel" id="notificationsPanel">
+            <div class="notification-header">
+                <h3>Notifications</h3>
+                <button class="clear-notifications" id="clearNotifs">Tout effacer</button>
+            </div>
+            <div id="notificationsList">
+                <!-- Notifications will appear here -->
+            </div>
+        </div>
         
         <div class="search-container">
             <div class="search-bar">
@@ -839,6 +873,8 @@
         let currentUser = null;
         let cart = [];
         let isAdmin = false;
+        let notifications = JSON.parse(localStorage.getItem('notifications')) || [];
+        let unreadNotifications = 0;
         
         // DOM Elements
         const authContainer = document.getElementById('authContainer');
@@ -854,6 +890,10 @@
         const cartBtn = document.getElementById('cartBtn');
         const homeBtn = document.getElementById('homeBtn');
         const logoutBtn = document.getElementById('logoutBtn');
+        const notifBtn = document.getElementById('notifBtn');
+        const notificationsPanel = document.getElementById('notificationsPanel');
+        const notificationsList = document.getElementById('notificationsList');
+        const clearNotifsBtn = document.getElementById('clearNotifs');
         const checkoutButton = document.getElementById('checkoutButton');
         const checkoutModal = document.getElementById('checkoutModal');
         
@@ -861,8 +901,9 @@
         function init() {
             setupEventListeners();
             renderProducts();
+            updateNotificationsUI();
             
-            // Vérifier les nouvelles commandes toutes les 3 secondes (plus rapide pour la démo)
+            // Vérifier les nouvelles commandes toutes les 3 secondes
             setInterval(checkForNewOrders, 3000);
         }
         
@@ -895,7 +936,6 @@
                         email: email 
                     };
                     isAdmin = true;
-                    document.getElementById('admin-notif').style.display = 'block';
                     showApp();
                     return;
                 }
@@ -942,6 +982,8 @@
             homeBtn.addEventListener('click', showHomePage);
             cartBtn.addEventListener('click', showCartPage);
             logoutBtn.addEventListener('click', logout);
+            notifBtn.addEventListener('click', toggleNotifications);
+            clearNotifsBtn.addEventListener('click', clearNotifications);
             
             // Checkout
             checkoutButton.addEventListener('click', showCheckoutModal);
@@ -961,6 +1003,29 @@
             });
         }
         
+        // Afficher/masquer les notifications
+        function toggleNotifications() {
+            notificationsPanel.classList.toggle('active');
+            if (notificationsPanel.classList.contains('active')) {
+                markNotificationsAsRead();
+            }
+        }
+        
+        // Marquer les notifications comme lues
+        function markNotificationsAsRead() {
+            unreadNotifications = 0;
+            updateNotificationCounter();
+            notifications.forEach(notif => notif.read = true);
+            localStorage.setItem('notifications', JSON.stringify(notifications));
+        }
+        
+        // Effacer toutes les notifications
+        function clearNotifications() {
+            notifications = [];
+            localStorage.setItem('notifications', JSON.stringify(notifications));
+            updateNotificationsUI();
+        }
+        
         // Vérifier les nouvelles commandes
         function checkForNewOrders() {
             if(!isAdmin) return;
@@ -974,57 +1039,84 @@
             
             if(newOrders.length > 0) {
                 newOrders.forEach(order => {
-                    showOrderNotification(order);
+                    addNewNotification(order);
                 });
                 localStorage.setItem('lastNotified', Date.now());
             }
         }
         
-        // Afficher une notification pour une commande spécifique
-        function showOrderNotification(order) {
-            const notif = document.getElementById('admin-notif');
-            const notifText = document.getElementById('notif-text');
-            const orderDetails = document.getElementById('order-details');
+        // Ajouter une nouvelle notification
+        function addNewNotification(order) {
+            const newNotification = {
+                id: Date.now(),
+                type: 'order',
+                user: order.user,
+                items: order.items,
+                total: order.total,
+                date: order.date,
+                read: false
+            };
             
-            notifText.innerHTML = `<strong>Nouvelle commande de ${order.user}</strong>`;
+            notifications.unshift(newNotification);
+            localStorage.setItem('notifications', JSON.stringify(notifications));
             
-            let detailsHTML = '<div class="order-details">';
-            detailsHTML += `<div>Total: ${order.total.toFixed(2)}€</div>`;
-            detailsHTML += '<div>Articles:</div>';
+            unreadNotifications++;
+            updateNotificationCounter();
+            updateNotificationsUI();
             
-            order.items.forEach(item => {
-                detailsHTML += `
-                    <div class="order-item">
-                        <span>${item.name} x${item.quantity}</span>
-                        <span>${(item.price * item.quantity).toFixed(2)}€</span>
-                    </div>
-                `;
-            });
-            
-            detailsHTML += `<div>Date: ${new Date(order.date).toLocaleString()}</div>`;
-            detailsHTML += '</div>';
-            
-            orderDetails.innerHTML = detailsHTML;
-            
-            notif.style.display = 'block';
-            notif.style.animation = 'fadeIn 0.5s forwards';
-            
-            // Disparaît après 8s (plus long pour permettre la lecture)
-            setTimeout(() => {
-                notif.style.animation = 'fadeOut 0.5s forwards';
-                setTimeout(() => {
-                    notif.style.display = 'none';
-                }, 500);
-            }, 8000);
+            // Afficher une alerte visuelle
+            if (!notificationsPanel.classList.contains('active')) {
+                showNotificationAlert(newNotification);
+            }
         }
         
-        // Fermer la notification
-        function closeNotif() {
-            const notif = document.getElementById('admin-notif');
-            notif.style.animation = 'fadeOut 0.5s forwards';
+        // Afficher une alerte visuelle pour nouvelle notification
+        function showNotificationAlert(notification) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'notification-alert';
+            alertDiv.innerHTML = `
+                <div>Nouvelle commande de ${notification.user}</div>
+                <div>Total: ${notification.total.toFixed(2)}€</div>
+            `;
+            document.body.appendChild(alertDiv);
+            
             setTimeout(() => {
-                notif.style.display = 'none';
-            }, 500);
+                alertDiv.remove();
+            }, 3000);
+        }
+        
+        // Mettre à jour le compteur de notifications
+        function updateNotificationCounter() {
+            notifBtn.setAttribute('data-count', unreadNotifications);
+        }
+        
+        // Mettre à jour l'interface des notifications
+        function updateNotificationsUI() {
+            notificationsList.innerHTML = '';
+            
+            if (notifications.length === 0) {
+                notificationsList.innerHTML = '<div class="notification-item">Aucune notification</div>';
+                return;
+            }
+            
+            notifications.forEach(notification => {
+                const notifElement = document.createElement('div');
+                notifElement.className = `notification-item ${notification.read ? '' : 'unread'}`;
+                
+                let itemsHTML = '';
+                notification.items.forEach(item => {
+                    itemsHTML += `<div>${item.name} x${item.quantity} - ${(item.price * item.quantity).toFixed(2)}€</div>`;
+                });
+                
+                notifElement.innerHTML = `
+                    <div><strong>Nouvelle commande de ${notification.user}</strong></div>
+                    <div>Total: ${notification.total.toFixed(2)}€</div>
+                    ${itemsHTML}
+                    <div class="notification-time">${new Date(notification.date).toLocaleString()}</div>
+                `;
+                
+                notificationsList.appendChild(notifElement);
+            });
         }
         
         // Afficher l'application
@@ -1098,6 +1190,11 @@
             
             orders.push(newOrder);
             localStorage.setItem('orders', JSON.stringify(orders));
+            
+            // Si admin, ne pas s'envoyer de notification à soi-même
+            if (!isAdmin) {
+                addNewNotification(newOrder);
+            }
             
             alert('Paiement effectué ! Merci pour votre commande.');
             

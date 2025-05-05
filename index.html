@@ -873,19 +873,29 @@
                 const email = loginForm.querySelector('input[type="email"]').value;
                 const password = loginForm.querySelector('input[type="password"]').value;
                 
-                // Ici, normalement, vérification avec le backend
-                currentUser = { 
-                    name: email.split('@')[0], 
-                    email: email 
-                };
-                
-                // Vérifier si c'est l'admin
-                if(email === "admin@ashstore.com") {
+                // Vérification des identifiants admin
+                if(email === "admin@ashstore.com" && password === "admin") {
+                    currentUser = { 
+                        name: "Admin", 
+                        email: email 
+                    };
                     isAdmin = true;
                     document.getElementById('admin-notif').style.display = 'block';
+                    showApp();
+                    return;
                 }
                 
-                showApp();
+                // Pour les autres utilisateurs (simplifié)
+                if(email && password) {
+                    currentUser = { 
+                        name: email.split('@')[0], 
+                        email: email 
+                    };
+                    isAdmin = false;
+                    showApp();
+                } else {
+                    alert("Veuillez entrer un email et un mot de passe valides");
+                }
             });
             
             // Register
@@ -895,13 +905,22 @@
                 const email = registerForm.querySelector('input[type="email"]').value;
                 const password = registerForm.querySelector('input[type="password"]').value;
                 
-                // Ici, normalement, enregistrement dans le backend
-                currentUser = { 
-                    name: name, 
-                    email: email 
-                };
-                
-                showApp();
+                if(name && email && password) {
+                    // Empêcher l'inscription avec l'email admin
+                    if(email === "admin@ashstore.com") {
+                        alert("Cet email est réservé à l'administration");
+                        return;
+                    }
+                    
+                    currentUser = { 
+                        name: name, 
+                        email: email 
+                    };
+                    isAdmin = false;
+                    showApp();
+                } else {
+                    alert("Veuillez remplir tous les champs");
+                }
             });
             
             // Navigation
@@ -931,7 +950,7 @@
         function checkForNewOrders() {
             if(!isAdmin) return;
             
-            const orders = JSON.parse(localStorage.getItem('orders') || '[]';
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
             const lastNotified = localStorage.getItem('lastNotified') || 0;
             
             const newOrders = orders.filter(order => 

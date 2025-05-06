@@ -158,7 +158,6 @@
         .nav-buttons {
             display: flex;
             gap: 1rem;
-            align-items: center;
         }
         
         .nav-button {
@@ -176,8 +175,7 @@
             color: var(--accent);
         }
         
-        .nav-button.cart-btn::after,
-        .nav-button.notif-btn::after {
+        .nav-button.cart-btn::after {
             content: attr(data-count);
             position: absolute;
             top: -5px;
@@ -563,64 +561,9 @@
             box-shadow: 0 5px 15px rgba(233, 69, 96, 0.4);
         }
 
-        /* Notifications Panel */
-        .notifications-panel {
+        /* Admin Notification */
+        #admin-notif {
             display: none;
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            background: var(--secondary-bg);
-            width: 350px;
-            max-height: 500px;
-            overflow-y: auto;
-            border-radius: 10px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-            z-index: 999;
-            animation: fadeIn 0.3s ease;
-        }
-        
-        .notifications-panel.active {
-            display: block;
-        }
-        
-        .notification-header {
-            padding: 1rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .notification-item {
-            padding: 1rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .notification-item:hover {
-            background: rgba(255,255,255,0.05);
-        }
-        
-        .notification-item.unread {
-            background: rgba(233, 69, 96, 0.1);
-        }
-        
-        .notification-time {
-            font-size: 0.8rem;
-            color: #aaa;
-            margin-top: 5px;
-        }
-        
-        .clear-notifications {
-            background: none;
-            border: none;
-            color: var(--accent);
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-        
-        .notification-alert {
             position: fixed;
             top: 20px;
             right: 20px;
@@ -631,24 +574,68 @@
             z-index: 9999;
             box-shadow: 0 0 20px rgba(0,0,0,0.3);
             animation: fadeIn 0.5s forwards;
-            max-width: 300px;
+            max-width: 400px;
+        }
+        
+        #admin-notif .notif-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        #admin-notif .notif-title {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        
+        #admin-notif .notif-time {
+            font-size: 0.8em;
+            opacity: 0.8;
+        }
+        
+        #admin-notif .order-details {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+            font-size: 0.9em;
+        }
+        
+        #admin-notif .order-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        #admin-notif .order-total {
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        #admin-notif .close-notif {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2em;
+            cursor: pointer;
+            padding: 0 5px;
         }
         
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
+            from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
         }
         
         @keyframes fadeOut {
             from { opacity: 1; transform: translateY(0); }
-            to { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 0; transform: translateY(-20px); }
         }
         
         @media (max-width: 768px) {
             .checkout-grid {
                 grid-template-columns: 1fr;
             }
-            .notifications-panel {
+            #admin-notif {
                 width: calc(100% - 40px);
                 right: 20px;
                 left: 20px;
@@ -700,12 +687,24 @@
             </form>
             
             <form class="auth-form" id="registerForm">
-                <input type="text" placeholder="Nom complet" required>
-                <input type="email" placeholder="Email" required>
-                <input type="password" placeholder="Mot de passe" required>
+                <input type="text" id="registerName" placeholder="Nom complet" required>
+                <input type="email" id="registerEmail" placeholder="Email" required>
+                <input type="password" id="registerPassword" placeholder="Mot de passe" required>
                 <button type="submit">S'inscrire</button>
             </form>
         </div>
+    </div>
+    
+    <!-- Admin Notification -->
+    <div id="admin-notif" style="display:none;">
+        <div class="notif-header">
+            <div class="notif-title">Nouvelle Commande</div>
+            <div class="notif-time" id="notif-time"></div>
+            <button class="close-notif" onclick="closeNotif()">×</button>
+        </div>
+        <div class="client-info" id="client-info"></div>
+        <div class="order-details" id="order-details"></div>
+        <div class="order-total" id="order-total"></div>
     </div>
     
     <!-- Main App -->
@@ -715,24 +714,9 @@
             <div class="nav-buttons">
                 <button class="nav-button" id="homeBtn">Accueil</button>
                 <button class="nav-button cart-btn" id="cartBtn" data-count="0">Panier</button>
-                <!-- Le bouton notification ne sera visible que pour l'admin -->
-                <button class="nav-button notif-btn" id="notifBtn" data-count="0" style="display: none;">
-                    <i class="fas fa-bell"></i>
-                </button>
                 <button class="nav-button" id="logoutBtn">Déconnexion</button>
             </div>
         </header>
-        
-        <!-- Notifications Panel (visible seulement pour admin) -->
-        <div class="notifications-panel" id="notificationsPanel">
-            <div class="notification-header">
-                <h3>Notifications</h3>
-                <button class="clear-notifications" id="clearNotifs">Tout effacer</button>
-            </div>
-            <div id="notificationsList">
-                <!-- Notifications will appear here -->
-            </div>
-        </div>
         
         <div class="search-container">
             <div class="search-bar">
@@ -778,14 +762,14 @@
                 <div class="checkout-form">
                     <h3>Informations de livraison</h3>
                     <form id="deliveryForm">
-                        <input type="text" placeholder="Nom complet" required>
-                        <input type="text" placeholder="Adresse" required>
-                        <input type="text" placeholder="Complément d'adresse">
+                        <input type="text" id="fullName" placeholder="Nom complet" required>
+                        <input type="text" id="address" placeholder="Adresse" required>
+                        <input type="text" id="address2" placeholder="Complément d'adresse">
                         <div class="form-row">
-                            <input type="text" placeholder="Code postal" required>
-                            <input type="text" placeholder="Ville" required>
+                            <input type="text" id="zipCode" placeholder="Code postal" required>
+                            <input type="text" id="city" placeholder="Ville" required>
                         </div>
-                        <input type="tel" placeholder="Téléphone" required>
+                        <input type="tel" id="phone" placeholder="Téléphone" required>
                         
                         <h3>Méthode de paiement</h3>
                         <div class="payment-methods">
@@ -836,7 +820,7 @@
                             <span id="grandTotal">0€</span>
                         </div>
                     </div>
-                    <button class="confirm-payment">Payer maintenant</button>
+                    <button class="confirm-payment">Confirmer la commande</button>
                 </div>
             </div>
         </div>
@@ -893,8 +877,6 @@
         let currentUser = null;
         let cart = [];
         let isAdmin = false;
-        let notifications = JSON.parse(localStorage.getItem('notifications')) || [];
-        let unreadNotifications = 0;
         
         // DOM Elements
         const authContainer = document.getElementById('authContainer');
@@ -910,10 +892,6 @@
         const cartBtn = document.getElementById('cartBtn');
         const homeBtn = document.getElementById('homeBtn');
         const logoutBtn = document.getElementById('logoutBtn');
-        const notifBtn = document.getElementById('notifBtn');
-        const notificationsPanel = document.getElementById('notificationsPanel');
-        const notificationsList = document.getElementById('notificationsList');
-        const clearNotifsBtn = document.getElementById('clearNotifs');
         const checkoutButton = document.getElementById('checkoutButton');
         const checkoutModal = document.getElementById('checkoutModal');
         
@@ -922,8 +900,8 @@
             setupEventListeners();
             renderProducts();
             
-            // Vérifier les nouvelles commandes toutes les 3 secondes
-            setInterval(checkForNewOrders, 3000);
+            // Vérifier les nouvelles commandes toutes les 2 secondes
+            setInterval(checkForNewOrders, 2000);
         }
         
         // Configuration des écouteurs d'événements
@@ -955,9 +933,7 @@
                         email: email 
                     };
                     isAdmin = true;
-                    // Afficher le bouton notification seulement pour l'admin
-                    notifBtn.style.display = 'block';
-                    updateNotificationsUI();
+                    document.getElementById('admin-notif').style.display = 'block';
                     showApp();
                     return;
                 }
@@ -969,8 +945,6 @@
                         email: email 
                     };
                     isAdmin = false;
-                    // Cacher le bouton notification pour les autres utilisateurs
-                    notifBtn.style.display = 'none';
                     showApp();
                 } else {
                     alert("Veuillez entrer un email et un mot de passe valides");
@@ -980,9 +954,9 @@
             // Register
             registerForm.addEventListener('submit', (e) => {
                 e.preventDefault();
-                const name = registerForm.querySelector('input[type="text"]').value;
-                const email = registerForm.querySelector('input[type="email"]').value;
-                const password = registerForm.querySelector('input[type="password"]').value;
+                const name = document.getElementById('registerName').value;
+                const email = document.getElementById('registerEmail').value;
+                const password = document.getElementById('registerPassword').value;
                 
                 if(name && email && password) {
                     // Empêcher l'inscription avec l'email admin
@@ -996,8 +970,6 @@
                         email: email 
                     };
                     isAdmin = false;
-                    // Cacher le bouton notification pour les autres utilisateurs
-                    notifBtn.style.display = 'none';
                     showApp();
                 } else {
                     alert("Veuillez remplir tous les champs");
@@ -1008,8 +980,6 @@
             homeBtn.addEventListener('click', showHomePage);
             cartBtn.addEventListener('click', showCartPage);
             logoutBtn.addEventListener('click', logout);
-            notifBtn.addEventListener('click', toggleNotifications);
-            clearNotifsBtn.addEventListener('click', clearNotifications);
             
             // Checkout
             checkoutButton.addEventListener('click', showCheckoutModal);
@@ -1029,142 +999,100 @@
             });
         }
         
-        // Afficher/masquer les notifications
-        function toggleNotifications() {
-            if (!isAdmin) return;
-            
-            notificationsPanel.classList.toggle('active');
-            if (notificationsPanel.classList.contains('active')) {
-                markNotificationsAsRead();
-            }
-        }
-        
-        // Marquer les notifications comme lues
-        function markNotificationsAsRead() {
-            unreadNotifications = 0;
-            updateNotificationCounter();
-            notifications.forEach(notif => notif.read = true);
-            localStorage.setItem('notifications', JSON.stringify(notifications));
-        }
-        
-        // Effacer toutes les notifications
-        function clearNotifications() {
-            notifications = [];
-            unreadNotifications = 0;
-            updateNotificationCounter();
-            localStorage.setItem('notifications', JSON.stringify(notifications));
-            updateNotificationsUI();
-        }
-        
         // Vérifier les nouvelles commandes
         function checkForNewOrders() {
             if(!isAdmin) return;
             
-            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            const orders = JSON.parse(localStorage.getItem('orders') || [];
             const lastNotified = localStorage.getItem('lastNotified') || 0;
             
             const newOrders = orders.filter(order => 
-                new Date(order.date).getTime() > lastNotified && 
-                order.user !== "Admin" // Ne pas notifier l'admin de ses propres commandes
+                new Date(order.date).getTime() > lastNotified
             );
             
             if(newOrders.length > 0) {
                 newOrders.forEach(order => {
-                    addNewNotification(order);
+                    showOrderNotification(order);
                 });
                 localStorage.setItem('lastNotified', Date.now());
             }
         }
         
-        // Ajouter une nouvelle notification
-        function addNewNotification(order) {
-            const newNotification = {
-                id: Date.now(),
-                type: 'order',
-                user: order.user,
-                items: [...order.items],
-                total: order.total,
-                date: order.date,
-                read: false
-            };
+        // Afficher une notification pour une commande spécifique
+        function showOrderNotification(order) {
+            const notif = document.getElementById('admin-notif');
+            const notifTime = document.getElementById('notif-time');
+            const clientInfo = document.getElementById('client-info');
+            const orderDetails = document.getElementById('order-details');
+            const orderTotal = document.getElementById('order-total');
             
-            notifications.unshift(newNotification);
-            localStorage.setItem('notifications', JSON.stringify(notifications));
+            // Formater la date
+            const now = new Date();
+            const orderDate = new Date(order.date);
+            const timeDiff = Math.floor((now - orderDate) / 1000); // différence en secondes
             
-            unreadNotifications++;
-            updateNotificationCounter();
-            updateNotificationsUI();
-            
-            // Afficher une alerte visuelle
-            showNotificationAlert(newNotification);
-        }
-        
-        // Afficher une alerte visuelle pour nouvelle notification
-        function showNotificationAlert(notification) {
-            // Créer une div pour l'alerte
-            const alertDiv = document.createElement('div');
-            alertDiv.className = 'notification-alert';
-            
-            // Créer le contenu de la notification
-            let itemsList = '';
-            notification.items.forEach(item => {
-                itemsList += `<div>${item.name} x${item.quantity} - ${(item.price * item.quantity).toFixed(2)}€</div>`;
-            });
-            
-            alertDiv.innerHTML = `
-                <div><strong>Nouvelle commande de ${notification.user}</strong></div>
-                ${itemsList}
-                <div>Total: ${notification.total.toFixed(2)}€</div>
-                <div>${new Date(notification.date).toLocaleString()}</div>
-            `;
-            
-            document.body.appendChild(alertDiv);
-            
-            // Supprimer l'alerte après 5 secondes
-            setTimeout(() => {
-                alertDiv.style.animation = 'fadeOut 0.5s forwards';
-                setTimeout(() => {
-                    alertDiv.remove();
-                }, 500);
-            }, 5000);
-        }
-        
-        // Mettre à jour le compteur de notifications
-        function updateNotificationCounter() {
-            if (!isAdmin) return;
-            notifBtn.setAttribute('data-count', unreadNotifications);
-        }
-        
-        // Mettre à jour l'interface des notifications
-        function updateNotificationsUI() {
-            if (!isAdmin) return;
-            
-            notificationsList.innerHTML = '';
-            
-            if (notifications.length === 0) {
-                notificationsList.innerHTML = '<div class="notification-item">Aucune notification</div>';
-                return;
+            let timeText;
+            if(timeDiff < 60) {
+                timeText = "À l'instant";
+            } else if(timeDiff < 3600) {
+                timeText = `Il y a ${Math.floor(timeDiff/60)} min`;
+            } else if(timeDiff < 86400) {
+                timeText = `Il y a ${Math.floor(timeDiff/3600)} h`;
+            } else {
+                timeText = orderDate.toLocaleString();
             }
             
-            notifications.forEach(notification => {
-                const notifElement = document.createElement('div');
-                notifElement.className = `notification-item ${notification.read ? '' : 'unread'}`;
-                
-                // Créer la liste des articles
-                let itemsHTML = '';
-                notification.items.forEach(item => {
-                    itemsHTML += `<div>${item.name} x${item.quantity} - ${(item.price * item.quantity).toFixed(2)}€</div>`;
-                });
-                
-                notifElement.innerHTML = `
-                    <div><strong>Nouvelle commande de ${notification.user}</strong></div>
-                    ${itemsHTML}
-                    <div>Total: ${notification.total.toFixed(2)}€</div>
-                    <div class="notification-time">${new Date(notification.date).toLocaleString()}</div>
+            notifTime.textContent = timeText;
+            
+            // Informations client
+            clientInfo.innerHTML = `
+                <div><strong>Client:</strong> ${order.user}</div>
+                <div><strong>Adresse:</strong> ${order.deliveryInfo.address}, ${order.deliveryInfo.zipCode} ${order.deliveryInfo.city}</div>
+                <div><strong>Téléphone:</strong> ${order.deliveryInfo.phone}</div>
+            `;
+            
+            // Détails des articles
+            let detailsHTML = '<div class="order-details">';
+            detailsHTML += '<div><strong>Articles commandés:</strong></div>';
+            
+            order.items.forEach(item => {
+                detailsHTML += `
+                    <div class="order-item">
+                        <span>${item.name} x${item.quantity}</span>
+                        <span>${(item.price * item.quantity).toFixed(2)}€</span>
+                    </div>
                 `;
-                
-                notificationsList.appendChild(notifElement);
             });
+            
+            detailsHTML += '</div>';
+            orderDetails.innerHTML = detailsHTML;
+            
+            // Total
+            orderTotal.innerHTML = `
+                <div class="order-total">
+                    <strong>Total:</strong> ${order.total.toFixed(2)}€
+                </div>
+            `;
+            
+            notif.style.display = 'block';
+            notif.style.animation = 'fadeIn 0.5s forwards';
+            
+            // Disparaît après 10s
+            setTimeout(() => {
+                notif.style.animation = 'fadeOut 0.5s forwards';
+                setTimeout(() => {
+                    notif.style.display = 'none';
+                }, 500);
+            }, 10000);
+        }
+        
+        // Fermer la notification
+        function closeNotif() {
+            const notif = document.getElementById('admin-notif');
+            notif.style.animation = 'fadeOut 0.5s forwards';
+            setTimeout(() => {
+                notif.style.display = 'none';
+            }, 500);
         }
         
         // Afficher l'application
@@ -1227,11 +1155,34 @@
         
         // Confirmer le paiement
         function confirmPayment() {
-            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            // Récupérer les infos de livraison
+            const fullName = document.getElementById('fullName').value;
+            const address = document.getElementById('address').value;
+            const address2 = document.getElementById('address2').value;
+            const zipCode = document.getElementById('zipCode').value;
+            const city = document.getElementById('city').value;
+            const phone = document.getElementById('phone').value;
+            
+            if(!fullName || !address || !zipCode || !city || !phone) {
+                alert("Veuillez remplir tous les champs obligatoires");
+                return;
+            }
+            
+            const deliveryInfo = {
+                fullName,
+                address,
+                address2,
+                zipCode,
+                city,
+                phone
+            };
+            
+            const orders = JSON.parse(localStorage.getItem('orders') || []);
             const newOrder = {
                 id: Date.now(),
                 user: currentUser.name,
                 items: [...cart],
+                deliveryInfo,
                 date: new Date().toISOString(),
                 total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + 4.99
             };
@@ -1239,7 +1190,7 @@
             orders.push(newOrder);
             localStorage.setItem('orders', JSON.stringify(orders));
             
-            alert('Paiement effectué ! Merci pour votre commande.');
+            alert('Commande confirmée ! Merci pour votre achat.');
             
             // Vider le panier
             cart = [];

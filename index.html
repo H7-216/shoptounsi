@@ -158,6 +158,7 @@
         .nav-buttons {
             display: flex;
             gap: 1rem;
+            align-items: center;
         }
         
         .nav-button {
@@ -175,7 +176,8 @@
             color: var(--accent);
         }
         
-        .nav-button.cart-btn::after {
+        .nav-button.cart-btn::after,
+        .nav-button.notif-btn::after {
             content: attr(data-count);
             position: absolute;
             top: -5px;
@@ -622,13 +624,13 @@
         }
         
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px); }
+            from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
         }
         
         @keyframes fadeOut {
             from { opacity: 1; transform: translateY(0); }
-            to { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 0; transform: translateY(-10px); }
         }
         
         @media (max-width: 768px) {
@@ -681,8 +683,8 @@
             </div>
             
             <form class="auth-form active" id="loginForm">
-                <input type="email" placeholder="Email" required>
-                <input type="password" placeholder="Mot de passe" required>
+                <input type="email" id="loginEmail" placeholder="Email" required>
+                <input type="password" id="loginPassword" placeholder="Mot de passe" required>
                 <button type="submit">Se connecter</button>
             </form>
             
@@ -900,8 +902,8 @@
             setupEventListeners();
             renderProducts();
             
-            // Vérifier les nouvelles commandes toutes les 2 secondes
-            setInterval(checkForNewOrders, 2000);
+            // Vérifier les nouvelles commandes toutes les 3 secondes
+            setInterval(checkForNewOrders, 3000);
         }
         
         // Configuration des écouteurs d'événements
@@ -923,8 +925,8 @@
             // Login
             loginForm.addEventListener('submit', (e) => {
                 e.preventDefault();
-                const email = loginForm.querySelector('input[type="email"]').value;
-                const password = loginForm.querySelector('input[type="password"]').value;
+                const email = document.getElementById('loginEmail').value;
+                const password = document.getElementById('loginPassword').value;
                 
                 // Vérification des identifiants admin
                 if(email === "admin@ashstore.com" && password === "admin") {
@@ -1003,7 +1005,7 @@
         function checkForNewOrders() {
             if(!isAdmin) return;
             
-            const orders = JSON.parse(localStorage.getItem('orders') || [];
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
             const lastNotified = localStorage.getItem('lastNotified') || 0;
             
             const newOrders = orders.filter(order => 
@@ -1177,7 +1179,7 @@
                 phone
             };
             
-            const orders = JSON.parse(localStorage.getItem('orders') || []);
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
             const newOrder = {
                 id: Date.now(),
                 user: currentUser.name,

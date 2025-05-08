@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ASH STORE - Articles funéraires premium</title>
+    <!-- Ajout de Font Awesome pour les icônes -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -257,8 +258,8 @@
             to { opacity: 1; transform: translateY(0); }
         }
         
-        /* Rest of your CSS remains the same */
-        /* ... (le reste de votre CSS existant) ... */
+        /* Rest of your existing CSS... */
+        /* ... (Tout le reste de votre CSS existant reste inchangé) ... */
     </style>
 </head>
 <body>
@@ -271,15 +272,15 @@
             </div>
             
             <form class="auth-form active" id="loginForm">
-                <input type="email" id="loginEmail" placeholder="Email" required>
-                <input type="password" id="loginPassword" placeholder="Mot de passe" required>
+                <input type="email" placeholder="Email" required>
+                <input type="password" placeholder="Mot de passe" required>
                 <button type="submit">Se connecter</button>
             </form>
             
             <form class="auth-form" id="registerForm">
-                <input type="text" id="registerName" placeholder="Nom complet" required>
-                <input type="email" id="registerEmail" placeholder="Email" required>
-                <input type="password" id="registerPassword" placeholder="Mot de passe" required>
+                <input type="text" placeholder="Nom complet" required>
+                <input type="email" placeholder="Email" required>
+                <input type="password" placeholder="Mot de passe" required>
                 <button type="submit">S'inscrire</button>
             </form>
         </div>
@@ -311,8 +312,8 @@
             </div>
         </div>
         
-        <!-- Rest of your HTML remains the same -->
-        <!-- ... (le reste de votre HTML existant) ... -->
+        <!-- Rest of your existing HTML... -->
+        <!-- ... (Tout le reste de votre HTML existant reste inchangé) ... -->
     </div>
 
     <script>
@@ -325,7 +326,14 @@
                 stock: 10,
                 image: "https://images.unsplash.com/photo-1580338450487-9f8cc8f8f8f8?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
             },
-            // ... (vos autres produits)
+            {
+                id: 2,
+                name: "Urne Bois Noble",
+                price: 249.99,
+                stock: 5,
+                image: "https://images.unsplash.com/photo-1518364538800-6bae3c2ea0f2?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
+            },
+            // ... (Vos autres produits)
         ];
         
         // État de l'application
@@ -357,16 +365,32 @@
         
         // Configuration des écouteurs d'événements
         function setupEventListeners() {
-            // ... (vos autres écouteurs existants)
+            // Auth Tabs
+            document.querySelectorAll('.auth-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    document.querySelectorAll('.auth-form').forEach(form => {
+                        form.classList.remove('active');
+                    });
+                    
+                    document.getElementById(`${tab.dataset.tab}Form`).classList.add('active');
+                });
+            });
             
             // Login
             loginForm.addEventListener('submit', (e) => {
                 e.preventDefault();
-                const email = document.getElementById('loginEmail').value;
-                const password = document.getElementById('loginPassword').value;
+                const email = loginForm.querySelector('input[type="email"]').value;
+                const password = loginForm.querySelector('input[type="password"]').value;
                 
+                // Vérification des identifiants admin
                 if(email === "admin@ashstore.com" && password === "admin") {
-                    currentUser = { name: "Admin", email: email };
+                    currentUser = { 
+                        name: "Admin", 
+                        email: email 
+                    };
                     isAdmin = true;
                     // Afficher le bouton de notification seulement pour l'admin
                     notifBtn.style.display = 'block';
@@ -374,8 +398,12 @@
                     return;
                 }
                 
+                // Pour les autres utilisateurs
                 if(email && password) {
-                    currentUser = { name: email.split('@')[0], email: email };
+                    currentUser = { 
+                        name: email.split('@')[0], 
+                        email: email 
+                    };
                     isAdmin = false;
                     // Cacher le bouton de notification pour les utilisateurs normaux
                     notifBtn.style.display = 'none';
@@ -385,13 +413,40 @@
                 }
             });
             
+            // Register
+            registerForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const name = registerForm.querySelector('input[type="text"]').value;
+                const email = registerForm.querySelector('input[type="email"]').value;
+                const password = registerForm.querySelector('input[type="password"]').value;
+                
+                if(name && email && password) {
+                    // Empêcher l'inscription avec l'email admin
+                    if(email === "admin@ashstore.com") {
+                        alert("Cet email est réservé à l'administration");
+                        return;
+                    }
+                    
+                    currentUser = { 
+                        name: name, 
+                        email: email 
+                    };
+                    isAdmin = false;
+                    // Cacher le bouton de notification pour les utilisateurs normaux
+                    notifBtn.style.display = 'none';
+                    showApp();
+                } else {
+                    alert("Veuillez remplir tous les champs");
+                }
+            });
+            
             // Bouton notification
             notifBtn.addEventListener('click', toggleNotifications);
             
             // Effacer les notifications
             clearNotifsBtn.addEventListener('click', clearNotifications);
             
-            // ... (le reste de vos écouteurs)
+            // ... (Le reste de vos écouteurs d'événements existants)
         }
         
         // Afficher/masquer les notifications
@@ -421,7 +476,7 @@
         function checkForNewOrders() {
             if(!isAdmin) return;
             
-            const orders = JSON.parse(localStorage.getItem('orders')) || [];
+            const orders = JSON.parse(localStorage.getItem('orders') || []);
             const lastNotified = localStorage.getItem('lastNotified') || 0;
             
             const newOrders = orders.filter(order => 
@@ -487,7 +542,7 @@
             });
         }
         
-        // ... (le reste de vos fonctions existantes)
+        // ... (Toutes vos autres fonctions existantes restent inchangées)
         
         // Démarrer l'application
         init();

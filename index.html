@@ -1,11 +1,9 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ASH STORE - Articles funéraires premium</title>
-    <!-- Ajout de Font Awesome pour les icônes -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --main-bg: #1a1a2e;
@@ -160,7 +158,6 @@
         .nav-buttons {
             display: flex;
             gap: 1rem;
-            align-items: center;
         }
         
         .nav-button {
@@ -178,8 +175,7 @@
             color: var(--accent);
         }
         
-        .nav-button.cart-btn::after,
-        .nav-button.notif-btn::after {
+        .nav-button.cart-btn::after {
             content: attr(data-count);
             position: absolute;
             top: -5px;
@@ -195,71 +191,451 @@
             align-items: center;
         }
         
-        /* Notifications Panel */
-        .notifications-panel {
-            display: none;
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            background: var(--secondary-bg);
-            width: 350px;
-            max-height: 500px;
-            overflow-y: auto;
-            border-radius: 10px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-            z-index: 999;
-            animation: fadeIn 0.3s ease;
-            border: 1px solid var(--accent);
+        /* Search Bar */
+        .search-container {
+            padding: 1rem 2rem;
+            background: var(--main-bg);
         }
         
-        .notifications-panel.active {
-            display: block;
-        }
-        
-        .notification-header {
-            padding: 1rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+        .search-bar {
             display: flex;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .search-bar input {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 30px 0 0 30px;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            font-size: 16px;
+            outline: none;
+        }
+        
+        .search-bar button {
+            padding: 12px 20px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 0 30px 30px 0;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .search-bar button:hover {
+            background: #ff2d55;
+        }
+        
+        /* Products Grid */
+        .products-container {
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+        
+        .product-card {
+            background: var(--secondary-bg);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(233, 69, 96, 0.3);
+        }
+        
+        .product-image {
+            height: 200px;
+            background: #555;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 1.5rem;
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .product-info {
+            padding: 1.5rem;
+        }
+        
+        .product-title {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+        
+        .product-price {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+        
+        .product-stock {
+            font-size: 0.9rem;
+            color: #aaa;
+            margin-bottom: 1rem;
+        }
+        
+        .add-to-cart {
+            width: 100%;
+            padding: 10px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .add-to-cart:hover {
+            background: #ff2d55;
+            transform: translateY(-2px);
+        }
+        
+        /* Cart Page */
+        .cart-container {
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .cart-items {
+            display: grid;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .cart-item {
+            display: flex;
+            background: var(--secondary-bg);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .cart-item-image {
+            width: 120px;
+            height: 120px;
+            background: #555;
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .cart-item-details {
+            flex: 1;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
             justify-content: space-between;
+        }
+        
+        .cart-item-title {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .cart-item-price {
+            color: var(--accent);
+            font-weight: bold;
+        }
+        
+        .cart-item-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .quantity-btn {
+            width: 30px;
+            height: 30px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
             align-items: center;
         }
         
-        .notification-item {
-            padding: 1rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .notification-item:hover {
-            background: rgba(255,255,255,0.05);
-        }
-        
-        .notification-item.unread {
-            background: rgba(233, 69, 96, 0.1);
-        }
-        
-        .notification-time {
-            font-size: 0.8rem;
-            color: #aaa;
-            margin-top: 5px;
-        }
-        
-        .clear-notifications {
+        .remove-btn {
             background: none;
             border: none;
-            color: var(--accent);
+            color: #ff6b6b;
             cursor: pointer;
-            font-size: 0.9rem;
+            margin-left: auto;
+        }
+        
+        .cart-summary {
+            background: var(--secondary-bg);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-top: 2rem;
+        }
+        
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .checkout-btn {
+            width: 100%;
+            padding: 15px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .checkout-btn:hover {
+            background: #ff2d55;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(233, 69, 96, 0.4);
+        }
+
+        /* Checkout Modal */
+        .checkout-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 2rem 0;
+        }
+        
+        .checkout-container {
+            background: var(--secondary-bg);
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            border-radius: 10px;
+            position: relative;
+            animation: slideUp 0.5s ease;
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .close-checkout {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 2rem;
+            cursor: pointer;
+        }
+        
+        .checkout-grid {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 2rem;
+        }
+        
+        .checkout-form input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid #444;
+            border-radius: 5px;
+            color: var(--text);
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .form-row input {
+            flex: 1;
+        }
+        
+        .payment-methods {
+            margin: 1.5rem 0;
+        }
+        
+        .payment-method {
+            display: block;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            margin-bottom: 0.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        .payment-method input {
+            margin-right: 10px;
+        }
+        
+        .payment-details {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            border-radius: 5px;
+            margin-top: 1rem;
+        }
+        
+        .order-summary {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1.5rem;
+            border-radius: 10px;
+            position: sticky;
+            top: 1rem;
+        }
+        
+        .order-items {
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 1rem 0;
+        }
+        
+        .checkout-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #444;
+        }
+        
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+        }
+        
+        .grand-total {
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 2px solid var(--accent);
+        }
+        
+        .confirm-payment {
+            width: 100%;
+            padding: 15px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .confirm-payment:hover {
+            background: #ff2d55;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(233, 69, 96, 0.4);
+        }
+
+        /* Admin Notification */
+        #admin-notif {
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--accent);
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            z-index: 9999;
+            box-shadow: 0 0 20px rgba(0,0,0,0.3);
+            animation: fadeIn 0.5s forwards;
+            max-width: 400px;
+        }
+        
+        #admin-notif .order-details {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+            font-size: 0.9em;
+        }
+        
+        #admin-notif .order-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
         }
         
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
+            from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
         }
         
-        /* Rest of your existing CSS... */
-        /* ... (Tout le reste de votre CSS existant reste inchangé) ... */
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-20px); }
+        }
+        
+        @media (max-width: 768px) {
+            .checkout-grid {
+                grid-template-columns: 1fr;
+            }
+            #admin-notif {
+                width: calc(100% - 40px);
+            }
+        }
+        
+        /* Animations */
+        @keyframes slideIn {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .slide-in {
+            animation: slideIn 0.5s ease forwards;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .products-container {
+                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            }
+            
+            header {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem;
+            }
+            
+            .nav-buttons {
+                width: 100%;
+                justify-content: space-around;
+            }
+        }
     </style>
 </head>
 <body>
@@ -286,6 +662,13 @@
         </div>
     </div>
     
+    <!-- Admin Notification -->
+    <div id="admin-notif" style="display:none;">
+        <div id="notif-text"></div>
+        <div class="order-details" id="order-details"></div>
+        <button onclick="closeNotif()" style="margin-top:10px; background:none; border:none; color:white; cursor:pointer">× Fermer</button>
+    </div>
+    
     <!-- Main App -->
     <div class="app-container" id="appContainer">
         <header>
@@ -293,27 +676,116 @@
             <div class="nav-buttons">
                 <button class="nav-button" id="homeBtn">Accueil</button>
                 <button class="nav-button cart-btn" id="cartBtn" data-count="0">Panier</button>
-                <!-- Bouton notification visible seulement pour l'admin -->
-                <button class="nav-button notif-btn" id="notifBtn" data-count="0" style="display: none;">
-                    <i class="fas fa-bell"></i>
-                </button>
                 <button class="nav-button" id="logoutBtn">Déconnexion</button>
             </div>
         </header>
         
-        <!-- Panel des notifications -->
-        <div class="notifications-panel" id="notificationsPanel">
-            <div class="notification-header">
-                <h3>Commandes récentes</h3>
-                <button class="clear-notifications" id="clearNotifs">Tout effacer</button>
-            </div>
-            <div id="notificationsList">
-                <!-- Les notifications apparaîtront ici -->
+        <div class="search-container">
+            <div class="search-bar">
+                <input type="text" placeholder="Rechercher des produits...">
+                <button type="submit"><i class="fas fa-search"></i> Rechercher</button>
             </div>
         </div>
         
-        <!-- Rest of your existing HTML... -->
-        <!-- ... (Tout le reste de votre HTML existant reste inchangé) ... -->
+        <!-- Home Page -->
+        <div class="page" id="homePage">
+            <div class="products-container" id="productsContainer">
+                <!-- Produits chargés dynamiquement -->
+            </div>
+        </div>
+        
+        <!-- Cart Page -->
+        <div class="page" id="cartPage" style="display: none;">
+            <div class="cart-container">
+                <h2>Votre Panier</h2>
+                <div class="cart-items" id="cartItems">
+                    <!-- Articles du panier chargés dynamiquement -->
+                </div>
+                
+                <div class="cart-summary">
+                    <div class="cart-total">
+                        <span>Total:</span>
+                        <span id="cartTotal">0€</span>
+                    </div>
+                    <button class="checkout-btn" id="checkoutButton">Passer la commande</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Checkout Modal -->
+    <div class="checkout-modal" id="checkoutModal">
+        <div class="checkout-container">
+            <button class="close-checkout">&times;</button>
+            <h2>Finaliser votre commande</h2>
+            
+            <div class="checkout-grid">
+                <!-- Colonne gauche - Info livraison/paiement -->
+                <div class="checkout-form">
+                    <h3>Informations de livraison</h3>
+                    <form id="deliveryForm">
+                        <input type="text" placeholder="Nom complet" required>
+                        <input type="text" placeholder="Adresse" required>
+                        <input type="text" placeholder="Complément d'adresse">
+                        <div class="form-row">
+                            <input type="text" placeholder="Code postal" required>
+                            <input type="text" placeholder="Ville" required>
+                        </div>
+                        <input type="tel" placeholder="Téléphone" required>
+                        
+                        <h3>Méthode de paiement</h3>
+                        <div class="payment-methods">
+                            <label class="payment-method">
+                                <input type="radio" name="payment" checked>
+                                <span>Carte bancaire</span>
+                            </label>
+                            <label class="payment-method">
+                                <input type="radio" name="payment">
+                                <span>PayPal</span>
+                            </label>
+                            <label class="payment-method">
+                                <input type="radio" name="payment">
+                                <span>Paiement à la livraison</span>
+                            </label>
+                        </div>
+                        
+                        <div id="cardDetails" class="payment-details">
+                            <div class="form-row">
+                                <input type="text" placeholder="Numéro de carte" required>
+                                <input type="text" placeholder="CVV" required>
+                            </div>
+                            <div class="form-row">
+                                <input type="text" placeholder="MM/AA" required>
+                                <input type="text" placeholder="Titulaire de la carte" required>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Colonne droite - Récap commande -->
+                <div class="order-summary">
+                    <h3>Votre commande</h3>
+                    <div class="order-items" id="checkoutItems">
+                        <!-- Items dynamiques -->
+                    </div>
+                    <div class="order-totals">
+                        <div class="total-row">
+                            <span>Sous-total</span>
+                            <span id="subtotal">0€</span>
+                        </div>
+                        <div class="total-row">
+                            <span>Livraison</span>
+                            <span>4.99€</span>
+                        </div>
+                        <div class="total-row grand-total">
+                            <span>Total</span>
+                            <span id="grandTotal">0€</span>
+                        </div>
+                    </div>
+                    <button class="confirm-payment">Payer maintenant</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -333,42 +805,73 @@
                 stock: 5,
                 image: "https://images.unsplash.com/photo-1518364538800-6bae3c2ea0f2?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
             },
-            // ... (Vos autres produits)
+            {
+                id: 3,
+                name: "Urne Minimaliste",
+                price: 149.99,
+                stock: 8,
+                image: "https://images.unsplash.com/photo-1518364538800-6bae3c2ea0f2?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
+            },
+            {
+                id: 4,
+                name: "Urne Céleste",
+                price: 299.99,
+                stock: 3,
+                image: "https://images.unsplash.com/photo-1518364538800-6bae3c2ea0f2?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
+            },
+            {
+                id: 5,
+                name: "Urne Mémoire Éternelle",
+                price: 179.99,
+                stock: 7,
+                image: "https://images.unsplash.com/photo-1518364538800-6bae3c2ea0f2?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
+            },
+            {
+                id: 6,
+                name: "Urne Pierre Sculptée",
+                price: 349.99,
+                stock: 2,
+                image: "https://images.unsplash.com/photo-1518364538800-6bae3c2ea0f2?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
+            }
         ];
         
         // État de l'application
         let currentUser = null;
         let cart = [];
         let isAdmin = false;
-        let notifications = JSON.parse(localStorage.getItem('notifications')) || [];
-        let unreadNotifications = 0;
         
         // DOM Elements
         const authContainer = document.getElementById('authContainer');
         const appContainer = document.getElementById('appContainer');
         const loginForm = document.getElementById('loginForm');
         const registerForm = document.getElementById('registerForm');
-        const notifBtn = document.getElementById('notifBtn');
-        const notificationsPanel = document.getElementById('notificationsPanel');
-        const notificationsList = document.getElementById('notificationsList');
-        const clearNotifsBtn = document.getElementById('clearNotifs');
+        const authTabs = document.querySelectorAll('.auth-tab');
+        const homePage = document.getElementById('homePage');
+        const cartPage = document.getElementById('cartPage');
+        const productsContainer = document.getElementById('productsContainer');
+        const cartItems = document.getElementById('cartItems');
+        const cartTotal = document.getElementById('cartTotal');
+        const cartBtn = document.getElementById('cartBtn');
+        const homeBtn = document.getElementById('homeBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const checkoutButton = document.getElementById('checkoutButton');
+        const checkoutModal = document.getElementById('checkoutModal');
         
         // Initialisation
         function init() {
             setupEventListeners();
             renderProducts();
-            updateNotificationsUI();
             
-            // Vérifier les nouvelles commandes toutes les 2 secondes
-            setInterval(checkForNewOrders, 2000);
+            // Vérifier les nouvelles commandes toutes les 3 secondes (plus rapide pour la démo)
+            setInterval(checkForNewOrders, 3000);
         }
         
         // Configuration des écouteurs d'événements
         function setupEventListeners() {
             // Auth Tabs
-            document.querySelectorAll('.auth-tab').forEach(tab => {
+            authTabs.forEach(tab => {
                 tab.addEventListener('click', () => {
-                    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+                    authTabs.forEach(t => t.classList.remove('active'));
                     tab.classList.add('active');
                     
                     document.querySelectorAll('.auth-form').forEach(form => {
@@ -392,21 +895,18 @@
                         email: email 
                     };
                     isAdmin = true;
-                    // Afficher le bouton de notification seulement pour l'admin
-                    notifBtn.style.display = 'block';
+                    document.getElementById('admin-notif').style.display = 'block';
                     showApp();
                     return;
                 }
                 
-                // Pour les autres utilisateurs
+                // Pour les autres utilisateurs (simplifié)
                 if(email && password) {
                     currentUser = { 
                         name: email.split('@')[0], 
                         email: email 
                     };
                     isAdmin = false;
-                    // Cacher le bouton de notification pour les utilisateurs normaux
-                    notifBtn.style.display = 'none';
                     showApp();
                 } else {
                     alert("Veuillez entrer un email et un mot de passe valides");
@@ -432,51 +932,40 @@
                         email: email 
                     };
                     isAdmin = false;
-                    // Cacher le bouton de notification pour les utilisateurs normaux
-                    notifBtn.style.display = 'none';
                     showApp();
                 } else {
                     alert("Veuillez remplir tous les champs");
                 }
             });
             
-            // Bouton notification
-            notifBtn.addEventListener('click', toggleNotifications);
+            // Navigation
+            homeBtn.addEventListener('click', showHomePage);
+            cartBtn.addEventListener('click', showCartPage);
+            logoutBtn.addEventListener('click', logout);
             
-            // Effacer les notifications
-            clearNotifsBtn.addEventListener('click', clearNotifications);
+            // Checkout
+            checkoutButton.addEventListener('click', showCheckoutModal);
+            document.querySelector('.close-checkout').addEventListener('click', closeCheckoutModal);
+            document.querySelector('.confirm-payment').addEventListener('click', confirmPayment);
             
-            // ... (Le reste de vos écouteurs d'événements existants)
-        }
-        
-        // Afficher/masquer les notifications
-        function toggleNotifications() {
-            notificationsPanel.classList.toggle('active');
-            if (notificationsPanel.classList.contains('active')) {
-                markNotificationsAsRead();
-            }
-        }
-        
-        // Marquer les notifications comme lues
-        function markNotificationsAsRead() {
-            unreadNotifications = 0;
-            notifBtn.setAttribute('data-count', '0');
-            notifications.forEach(notif => notif.read = true);
-            localStorage.setItem('notifications', JSON.stringify(notifications));
-        }
-        
-        // Effacer toutes les notifications
-        function clearNotifications() {
-            notifications = [];
-            localStorage.setItem('notifications', JSON.stringify(notifications));
-            updateNotificationsUI();
+            // Gérer l'affichage des détails de carte
+            document.querySelectorAll('input[name="payment"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const cardDetails = document.getElementById('cardDetails');
+                    if (this.parentNode.textContent.includes("Carte bancaire")) {
+                        cardDetails.style.display = 'block';
+                    } else {
+                        cardDetails.style.display = 'none';
+                    }
+                });
+            });
         }
         
         // Vérifier les nouvelles commandes
         function checkForNewOrders() {
             if(!isAdmin) return;
             
-            const orders = JSON.parse(localStorage.getItem('orders') || []);
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
             const lastNotified = localStorage.getItem('lastNotified') || 0;
             
             const newOrders = orders.filter(order => 
@@ -485,64 +974,326 @@
             
             if(newOrders.length > 0) {
                 newOrders.forEach(order => {
-                    addNewNotification(order);
+                    showOrderNotification(order);
                 });
                 localStorage.setItem('lastNotified', Date.now());
             }
         }
         
-        // Ajouter une nouvelle notification
-        function addNewNotification(order) {
-            const newNotification = {
-                id: Date.now(),
-                type: 'order',
-                user: order.user,
-                items: order.items,
-                total: order.total,
-                date: order.date,
-                deliveryInfo: order.deliveryInfo,
-                read: false
-            };
+        // Afficher une notification pour une commande spécifique
+        function showOrderNotification(order) {
+            const notif = document.getElementById('admin-notif');
+            const notifText = document.getElementById('notif-text');
+            const orderDetails = document.getElementById('order-details');
             
-            notifications.unshift(newNotification);
-            localStorage.setItem('notifications', JSON.stringify(notifications));
+            notifText.innerHTML = `<strong>Nouvelle commande de ${order.user}</strong>`;
             
-            unreadNotifications++;
-            notifBtn.setAttribute('data-count', unreadNotifications);
-            updateNotificationsUI();
+            let detailsHTML = '<div class="order-details">';
+            detailsHTML += `<div>Total: ${order.total.toFixed(2)}€</div>`;
+            detailsHTML += '<div>Articles:</div>';
+            
+            order.items.forEach(item => {
+                detailsHTML += `
+                    <div class="order-item">
+                        <span>${item.name} x${item.quantity}</span>
+                        <span>${(item.price * item.quantity).toFixed(2)}€</span>
+                    </div>
+                `;
+            });
+            
+            detailsHTML += `<div>Date: ${new Date(order.date).toLocaleString()}</div>`;
+            detailsHTML += '</div>';
+            
+            orderDetails.innerHTML = detailsHTML;
+            
+            notif.style.display = 'block';
+            notif.style.animation = 'fadeIn 0.5s forwards';
+            
+            // Disparaît après 8s (plus long pour permettre la lecture)
+            setTimeout(() => {
+                notif.style.animation = 'fadeOut 0.5s forwards';
+                setTimeout(() => {
+                    notif.style.display = 'none';
+                }, 500);
+            }, 8000);
         }
         
-        // Mettre à jour l'interface des notifications
-        function updateNotificationsUI() {
-            notificationsList.innerHTML = '';
-            
-            if (notifications.length === 0) {
-                notificationsList.innerHTML = '<div class="notification-item">Aucune commande récente</div>';
+        // Fermer la notification
+        function closeNotif() {
+            const notif = document.getElementById('admin-notif');
+            notif.style.animation = 'fadeOut 0.5s forwards';
+            setTimeout(() => {
+                notif.style.display = 'none';
+            }, 500);
+        }
+        
+        // Afficher l'application
+        function showApp() {
+            authContainer.classList.add('hidden');
+            appContainer.classList.add('active');
+            showHomePage();
+        }
+        
+        // Afficher la page d'accueil
+        function showHomePage() {
+            homePage.style.display = 'block';
+            cartPage.style.display = 'none';
+        }
+        
+        // Afficher la page panier
+        function showCartPage() {
+            homePage.style.display = 'none';
+            cartPage.style.display = 'block';
+            renderCart();
+        }
+        
+        // Afficher le modal de paiement
+        function showCheckoutModal() {
+            if (cart.length === 0) {
+                alert("Votre panier est vide !");
                 return;
             }
             
-            notifications.forEach(notification => {
-                const notifElement = document.createElement('div');
-                notifElement.className = `notification-item ${notification.read ? '' : 'unread'}`;
+            checkoutModal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+            
+            // Remplir le récapitulatif
+            const checkoutItems = document.getElementById('checkoutItems');
+            checkoutItems.innerHTML = '';
+            
+            let subtotal = 0;
+            
+            cart.forEach(item => {
+                const itemElement = document.createElement('div');
+                itemElement.className = 'checkout-item';
+                itemElement.innerHTML = `
+                    <span>${item.name} x${item.quantity}</span>
+                    <span>${(item.price * item.quantity).toFixed(2)}€</span>
+                `;
+                checkoutItems.appendChild(itemElement);
                 
-                let itemsHTML = notification.items.map(item => 
-                    `<div>${item.name} x${item.quantity} - ${(item.price * item.quantity).toFixed(2)}€</div>`
-                ).join('');
+                subtotal += item.price * item.quantity;
+            });
+            
+            document.getElementById('subtotal').textContent = subtotal.toFixed(2) + '€';
+            document.getElementById('grandTotal').textContent = (subtotal + 4.99).toFixed(2) + '€';
+        }
+        
+        // Fermer le modal de paiement
+        function closeCheckoutModal() {
+            checkoutModal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Confirmer le paiement
+        function confirmPayment() {
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            const newOrder = {
+                id: Date.now(),
+                user: currentUser.name,
+                items: [...cart],
+                date: new Date().toISOString(),
+                total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + 4.99
+            };
+            
+            orders.push(newOrder);
+            localStorage.setItem('orders', JSON.stringify(orders));
+            
+            alert('Paiement effectué ! Merci pour votre commande.');
+            
+            // Vider le panier
+            cart = [];
+            updateCartUI();
+            
+            // Fermer le modal et retourner à l'accueil
+            closeCheckoutModal();
+            showHomePage();
+        }
+        
+        // Déconnexion
+        function logout() {
+            currentUser = null;
+            isAdmin = false;
+            authContainer.classList.remove('hidden');
+            appContainer.classList.remove('active');
+            
+            // Réinitialiser les formulaires
+            loginForm.reset();
+            registerForm.reset();
+            
+            // Activer le tab de connexion
+            authTabs[0].click();
+        }
+        
+        // Rendre les produits
+        function renderProducts() {
+            productsContainer.innerHTML = '';
+            
+            products.forEach((product, index) => {
+                const productElement = document.createElement('div');
+                productElement.className = 'product-card slide-in';
+                productElement.style.animationDelay = `${index * 0.1}s`;
                 
-                notifElement.innerHTML = `
-                    <div><strong>Nouvelle commande de ${notification.user}</strong></div>
-                    <div><strong>Adresse:</strong> ${notification.deliveryInfo.address}, ${notification.deliveryInfo.zipCode} ${notification.deliveryInfo.city}</div>
-                    <div><strong>Téléphone:</strong> ${notification.deliveryInfo.phone}</div>
-                    ${itemsHTML}
-                    <div><strong>Total:</strong> ${notification.total.toFixed(2)}€</div>
-                    <div class="notification-time">${new Date(notification.date).toLocaleString()}</div>
+                productElement.innerHTML = `
+                    <div class="product-image" style="background-image: url('${product.image}')"></div>
+                    <div class="product-info">
+                        <h3 class="product-title">${product.name}</h3>
+                        <div class="product-price">${product.price.toFixed(2)}€</div>
+                        <div class="product-stock">${product.stock > 0 ? `En stock (${product.stock})` : 'Rupture de stock'}</div>
+                        <button class="add-to-cart" data-id="${product.id}" ${product.stock === 0 ? 'disabled' : ''}>
+                            ${product.stock > 0 ? 'Ajouter au panier' : 'Indisponible'}
+                        </button>
+                    </div>
                 `;
                 
-                notificationsList.appendChild(notifElement);
+                productsContainer.appendChild(productElement);
+            });
+            
+            // Ajouter les écouteurs d'événements pour les boutons "Ajouter au panier"
+            document.querySelectorAll('.add-to-cart').forEach(button => {
+                button.addEventListener('click', () => {
+                    const productId = parseInt(button.dataset.id);
+                    addToCart(productId);
+                });
             });
         }
         
-        // ... (Toutes vos autres fonctions existantes restent inchangées)
+        // Ajouter un produit au panier
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            
+            if (!product || product.stock === 0) return;
+            
+            const existingItem = cart.find(item => item.id === productId);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    image: product.image,
+                    quantity: 1
+                });
+            }
+            
+            product.stock -= 1;
+            
+            updateCartUI();
+            renderProducts(); // Mettre à jour l'affichage des stocks
+        }
+        
+        // Mettre à jour l'UI du panier
+        function updateCartUI() {
+            // Mettre à jour le compteur du bouton panier
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartBtn.setAttribute('data-count', totalItems);
+        }
+        
+        // Rendre le panier
+        function renderCart() {
+            if (cart.length === 0) {
+                cartItems.innerHTML = '<p>Votre panier est vide</p>';
+                cartTotal.textContent = '0€';
+                return;
+            }
+            
+            cartItems.innerHTML = '';
+            
+            cart.forEach(item => {
+                const cartItemElement = document.createElement('div');
+                cartItemElement.className = 'cart-item';
+                
+                cartItemElement.innerHTML = `
+                    <div class="cart-item-image" style="background-image: url('${item.image}')"></div>
+                    <div class="cart-item-details">
+                        <h3 class="cart-item-title">${item.name}</h3>
+                        <div class="cart-item-price">${item.price.toFixed(2)}€</div>
+                        <div class="cart-item-actions">
+                            <div class="quantity-control">
+                                <button class="quantity-btn minus" data-id="${item.id}">-</button>
+                                <span>${item.quantity}</span>
+                                <button class="quantity-btn plus" data-id="${item.id}">+</button>
+                            </div>
+                            <button class="remove-btn" data-id="${item.id}">Supprimer</button>
+                        </div>
+                    </div>
+                `;
+                
+                cartItems.appendChild(cartItemElement);
+            });
+            
+            // Calculer le total
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            cartTotal.textContent = `${total.toFixed(2)}€`;
+            
+            // Ajouter les écouteurs d'événements pour les boutons du panier
+            document.querySelectorAll('.quantity-btn.minus').forEach(button => {
+                button.addEventListener('click', () => {
+                    const productId = parseInt(button.dataset.id);
+                    updateCartItemQuantity(productId, -1);
+                });
+            });
+            
+            document.querySelectorAll('.quantity-btn.plus').forEach(button => {
+                button.addEventListener('click', () => {
+                    const productId = parseInt(button.dataset.id);
+                    updateCartItemQuantity(productId, 1);
+                });
+            });
+            
+            document.querySelectorAll('.remove-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const productId = parseInt(button.dataset.id);
+                    removeFromCart(productId);
+                });
+            });
+        }
+        
+        // Mettre à jour la quantité d'un article
+        function updateCartItemQuantity(productId, change) {
+            const item = cart.find(item => item.id === productId);
+            const product = products.find(p => p.id === productId);
+            
+            if (!item || !product) return;
+            
+            if (change > 0) {
+                // Augmenter la quantité
+                if (product.stock > 0) {
+                    item.quantity += 1;
+                    product.stock -= 1;
+                }
+            } else {
+                // Diminuer la quantité
+                if (item.quantity > 1) {
+                    item.quantity -= 1;
+                    product.stock += 1;
+                }
+            }
+            
+            updateCartUI();
+            renderCart();
+            renderProducts();
+        }
+        
+        // Supprimer un article du panier
+        function removeFromCart(productId) {
+            const itemIndex = cart.findIndex(item => item.id === productId);
+            const product = products.find(p => p.id === productId);
+            
+            if (itemIndex === -1 || !product) return;
+            
+            // Remettre le stock
+            product.stock += cart[itemIndex].quantity;
+            
+            // Supprimer l'article
+            cart.splice(itemIndex, 1);
+            
+            updateCartUI();
+            renderCart();
+            renderProducts();
+        }
         
         // Démarrer l'application
         init();

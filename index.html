@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -590,6 +590,100 @@
             margin-bottom: 5px;
         }
         
+        #admin-notif .notif-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        #admin-notif .history-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid var(--accent);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        #admin-notif .history-btn:hover {
+            background: var(--accent);
+        }
+        
+        #admin-notif .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            margin-left: auto;
+        }
+        
+        /* Order History Modal */
+        .order-history-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 9999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s forwards;
+        }
+        
+        .history-container {
+            background: var(--secondary-bg);
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            padding: 2rem;
+            border-radius: 10px;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .close-history {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .history-list {
+            margin-top: 1rem;
+        }
+        
+        .history-order {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+        }
+        
+        .history-order h3 {
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+        
+        .history-order .order-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.3rem;
+        }
+        
+        .history-order .order-total {
+            font-weight: bold;
+            margin-top: 0.5rem;
+            border-top: 1px solid #444;
+            padding-top: 0.5rem;
+        }
+        
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
@@ -666,7 +760,21 @@
     <div id="admin-notif" style="display:none;">
         <div id="notif-text"></div>
         <div class="order-details" id="order-details"></div>
-        <button onclick="closeNotif()" style="margin-top:10px; background:none; border:none; color:white; cursor:pointer">× Fermer</button>
+        <div class="notif-buttons">
+            <button onclick="showFullOrderHistory()" class="history-btn">Voir l'historique</button>
+            <button onclick="closeNotif()" class="close-btn">× Fermer</button>
+        </div>
+    </div>
+    
+    <!-- Order History Modal -->
+    <div class="order-history-modal" id="orderHistoryModal">
+        <div class="history-container">
+            <button class="close-history" onclick="closeOrderHistory()">×</button>
+            <h2>Historique des Commandes</h2>
+            <div class="history-list" id="historyList">
+                <!-- Les commandes seront chargées ici -->
+            </div>
+        </div>
     </div>
     
     <!-- Main App -->
@@ -1018,6 +1126,42 @@
             }, 8000);
         }
         
+        // Afficher l'historique complet des commandes
+        function showFullOrderHistory() {
+            const modal = document.getElementById('orderHistoryModal');
+            const historyList = document.getElementById('historyList');
+            
+            // Charger les commandes depuis localStorage
+            const orders = JSON.parse(localStorage.getItem('orders') || [];
+            
+            if (orders.length === 0) {
+                historyList.innerHTML = '<p>Aucune commande enregistrée.</p>';
+            } else {
+                historyList.innerHTML = orders.map(order => `
+                    <div class="history-order">
+                        <h3>Commande #${order.id} - ${new Date(order.date).toLocaleString()}</h3>
+                        <div>Client: ${order.user}</div>
+                        <div>Articles:</div>
+                        ${order.items.map(item => `
+                            <div class="order-item">
+                                <span>${item.name} x${item.quantity}</span>
+                                <span>${(item.price * item.quantity).toFixed(2)}€</span>
+                            </div>
+                        `).join('')}
+                        <div class="order-total">Total: ${order.total.toFixed(2)}€</div>
+                    </div>
+                `).join('');
+            }
+            
+            modal.style.display = 'flex';
+            closeNotif(); // Fermer la notification actuelle
+        }
+        
+        // Fermer l'historique des commandes
+        function closeOrderHistory() {
+            document.getElementById('orderHistoryModal').style.display = 'none';
+        }
+        
         // Fermer la notification
         function closeNotif() {
             const notif = document.getElementById('admin-notif');
@@ -1087,7 +1231,7 @@
         
         // Confirmer le paiement
         function confirmPayment() {
-            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            const orders = JSON.parse(localStorage.getItem('orders') || []);
             const newOrder = {
                 id: Date.now(),
                 user: currentUser.name,

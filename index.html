@@ -948,6 +948,24 @@
         let cart = [];
         let isAdmin = false;
         
+        // Stockage des utilisateurs
+        const users = [
+            {
+                name: "Admin",
+                email: "admin@ashstore.com",
+                password: "admin",
+                isAdmin: true
+            }
+        ];
+        
+        // Charger les utilisateurs depuis le localStorage
+        function loadUsers() {
+            const savedUsers = localStorage.getItem('users');
+            if (savedUsers) {
+                users.push(...JSON.parse(savedUsers));
+            }
+        }
+        
         // DOM Elements
         const authContainer = document.getElementById('authContainer');
         const appContainer = document.getElementById('appContainer');
@@ -967,10 +985,9 @@
         
         // Initialisation
         function init() {
+            loadUsers();
             setupEventListeners();
             renderProducts();
-            
-            // Vérifier les nouvelles commandes toutes les 3 secondes (plus rapide pour la démo)
             setInterval(checkForNewOrders, 3000);
         }
         
@@ -996,28 +1013,27 @@
                 const email = loginForm.querySelector('input[type="email"]').value;
                 const password = loginForm.querySelector('input[type="password"]').value;
                 
-                // Vérification des identifiants admin
-                if(email === "admin@ashstore.com" && password === "admin") {
-                    currentUser = { 
-                        name: "Admin", 
-                        email: email 
-                    };
-                    isAdmin = true;
-                    document.getElementById('admin-notif').style.display = 'block';
-                    showApp();
+                if (!email || !password) {
+                    alert("Veuillez remplir tous les champs");
                     return;
                 }
                 
-                // Pour les autres utilisateurs (simplifié)
-                if(email && password) {
+                const user = users.find(u => u.email === email && u.password === password);
+                
+                if (user) {
                     currentUser = { 
-                        name: email.split('@')[0], 
-                        email: email 
+                        name: user.name, 
+                        email: user.email 
                     };
-                    isAdmin = false;
+                    isAdmin = user.isAdmin || false;
+                    
+                    if (isAdmin) {
+                        document.getElementById('admin-notif').style.display = 'block';
+                    }
+                    
                     showApp();
                 } else {
-                    alert("Veuillez entrer un email et un mot de passe valides");
+                    alert("Email ou mot de passe incorrect");
                 }
             });
             
@@ -1028,22 +1044,38 @@
                 const email = registerForm.querySelector('input[type="email"]').value;
                 const password = registerForm.querySelector('input[type="password"]').value;
                 
-                if(name && email && password) {
-                    // Empêcher l'inscription avec l'email admin
-                    if(email === "admin@ashstore.com") {
-                        alert("Cet email est réservé à l'administration");
-                        return;
-                    }
-                    
-                    currentUser = { 
-                        name: name, 
-                        email: email 
-                    };
-                    isAdmin = false;
-                    showApp();
-                } else {
+                if (!name || !email || !password) {
                     alert("Veuillez remplir tous les champs");
+                    return;
                 }
+                
+                if (users.some(u => u.email === email)) {
+                    alert("Cet email est déjà utilisé");
+                    return;
+                }
+                
+                if (email === "admin@ashstore.com") {
+                    alert("Cet email est réservé");
+                    return;
+                }
+                
+                const newUser = { 
+                    name: name, 
+                    email: email,
+                    password: password,
+                    isAdmin: false
+                };
+                
+                users.push(newUser);
+                localStorage.setItem('users', JSON.stringify(users.filter(u => !u.isAdmin)));
+                
+                currentUser = { 
+                    name: name, 
+                    email: email 
+                };
+                isAdmin = false;
+                
+                showApp();
             });
             
             // Navigation
@@ -1073,7 +1105,7 @@
         function checkForNewOrders() {
             if(!isAdmin) return;
             
-            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            const orders = JSON.parse(localStorage.getItem('orders') || []);
             const lastNotified = localStorage.getItem('lastNotified') || 0;
             
             const newOrders = orders.filter(order => 
@@ -1117,7 +1149,6 @@
             notif.style.display = 'block';
             notif.style.animation = 'fadeIn 0.5s forwards';
             
-            // Disparaît après 8s (plus long pour permettre la lecture)
             setTimeout(() => {
                 notif.style.animation = 'fadeOut 0.5s forwards';
                 setTimeout(() => {
@@ -1131,8 +1162,7 @@
             const modal = document.getElementById('orderHistoryModal');
             const historyList = document.getElementById('historyList');
             
-            // Charger les commandes depuis localStorage
-            const orders = JSON.parse(localStorage.getItem('orders') || [];
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
             
             if (orders.length === 0) {
                 historyList.innerHTML = '<p>Aucune commande enregistrée.</p>';
@@ -1154,7 +1184,7 @@
             }
             
             modal.style.display = 'flex';
-            closeNotif(); // Fermer la notification actuelle
+            closeNotif();
         }
         
         // Fermer l'historique des commandes
@@ -1201,7 +1231,6 @@
             checkoutModal.style.display = 'block';
             document.body.style.overflow = 'hidden';
             
-            // Remplir le récapitulatif
             const checkoutItems = document.getElementById('checkoutItems');
             checkoutItems.innerHTML = '';
             
@@ -1245,11 +1274,8 @@
             
             alert('Paiement effectué ! Merci pour votre commande.');
             
-            // Vider le panier
             cart = [];
             updateCartUI();
-            
-            // Fermer le modal et retourner à l'accueil
             closeCheckoutModal();
             showHomePage();
         }
@@ -1260,12 +1286,8 @@
             isAdmin = false;
             authContainer.classList.remove('hidden');
             appContainer.classList.remove('active');
-            
-            // Réinitialiser les formulaires
             loginForm.reset();
             registerForm.reset();
-            
-            // Activer le tab de connexion
             authTabs[0].click();
         }
         
@@ -1293,7 +1315,6 @@
                 productsContainer.appendChild(productElement);
             });
             
-            // Ajouter les écouteurs d'événements pour les boutons "Ajouter au panier"
             document.querySelectorAll('.add-to-cart').forEach(button => {
                 button.addEventListener('click', () => {
                     const productId = parseInt(button.dataset.id);
@@ -1325,12 +1346,11 @@
             product.stock -= 1;
             
             updateCartUI();
-            renderProducts(); // Mettre à jour l'affichage des stocks
+            renderProducts();
         }
         
         // Mettre à jour l'UI du panier
         function updateCartUI() {
-            // Mettre à jour le compteur du bouton panier
             const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
             cartBtn.setAttribute('data-count', totalItems);
         }
@@ -1368,11 +1388,9 @@
                 cartItems.appendChild(cartItemElement);
             });
             
-            // Calculer le total
             const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
             cartTotal.textContent = `${total.toFixed(2)}€`;
             
-            // Ajouter les écouteurs d'événements pour les boutons du panier
             document.querySelectorAll('.quantity-btn.minus').forEach(button => {
                 button.addEventListener('click', () => {
                     const productId = parseInt(button.dataset.id);
@@ -1403,13 +1421,11 @@
             if (!item || !product) return;
             
             if (change > 0) {
-                // Augmenter la quantité
                 if (product.stock > 0) {
                     item.quantity += 1;
                     product.stock -= 1;
                 }
             } else {
-                // Diminuer la quantité
                 if (item.quantity > 1) {
                     item.quantity -= 1;
                     product.stock += 1;
@@ -1428,10 +1444,7 @@
             
             if (itemIndex === -1 || !product) return;
             
-            // Remettre le stock
             product.stock += cart[itemIndex].quantity;
-            
-            // Supprimer l'article
             cart.splice(itemIndex, 1);
             
             updateCartUI();

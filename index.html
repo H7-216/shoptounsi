@@ -191,6 +191,22 @@
             align-items: center;
         }
         
+        .nav-button.notif-btn::after {
+            content: attr(data-count);
+            position: absolute;
+            top: -5px;
+            right: 0;
+            background: var(--accent);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
         /* Search Bar */
         .search-container {
             padding: 1rem 2rem;
@@ -834,6 +850,7 @@
             <div class="nav-buttons">
                 <button class="nav-button" id="homeBtn">Accueil</button>
                 <button class="nav-button cart-btn" id="cartBtn" data-count="0">Panier</button>
+                <button class="nav-button notif-btn" id="notifBtn" data-count="0" style="display: none;">Notifications</button>
                 <button class="nav-button" id="logoutBtn">Déconnexion</button>
             </div>
         </header>
@@ -1028,6 +1045,7 @@
         const cartItems = document.getElementById('cartItems');
         const cartTotal = document.getElementById('cartTotal');
         const cartBtn = document.getElementById('cartBtn');
+        const notifBtn = document.getElementById('notifBtn');
         const homeBtn = document.getElementById('homeBtn');
         const logoutBtn = document.getElementById('logoutBtn');
         const checkoutButton = document.getElementById('checkoutButton');
@@ -1079,6 +1097,10 @@
                     
                     if (isAdmin) {
                         document.getElementById('admin-notif').style.display = 'block';
+                        notifBtn.style.display = 'block';
+                        updateNotificationCount();
+                    } else {
+                        notifBtn.style.display = 'none';
                     }
                     
                     showApp();
@@ -1124,6 +1146,7 @@
                     email: email 
                 };
                 isAdmin = false;
+                notifBtn.style.display = 'none';
                 
                 showApp();
             });
@@ -1131,6 +1154,7 @@
             // Navigation
             homeBtn.addEventListener('click', showHomePage);
             cartBtn.addEventListener('click', showCartPage);
+            notifBtn.addEventListener('click', showFullOrderHistory);
             logoutBtn.addEventListener('click', logout);
             
             // Checkout
@@ -1151,11 +1175,23 @@
             });
         }
         
+        // Mettre à jour le compteur de notifications
+        function updateNotificationCount() {
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            const lastNotified = localStorage.getItem('lastNotified') || 0;
+            
+            const newOrders = orders.filter(order => 
+                new Date(order.date).getTime() > lastNotified
+            );
+            
+            notifBtn.setAttribute('data-count', newOrders.length);
+        }
+        
         // Vérifier les nouvelles commandes
         function checkForNewOrders() {
             if(!isAdmin) return;
             
-            const orders = JSON.parse(localStorage.getItem('orders') || []);
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
             const lastNotified = localStorage.getItem('lastNotified') || 0;
             
             const newOrders = orders.filter(order => 
@@ -1167,6 +1203,7 @@
                     showOrderNotification(order);
                 });
                 localStorage.setItem('lastNotified', Date.now());
+                updateNotificationCount();
             }
         }
         
@@ -1212,7 +1249,7 @@
             const modal = document.getElementById('orderHistoryModal');
             const historyList = document.getElementById('historyList');
             
-            const orders = JSON.parse(localStorage.getItem('orders') || []);
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
             
             if (orders.length === 0) {
                 historyList.innerHTML = '<p>Aucune commande enregistrée.</p>';
@@ -1353,7 +1390,7 @@
             }
             
             // Créer la commande
-            const orders = JSON.parse(localStorage.getItem('orders') || []);
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
             const newOrder = {
                 id: Date.now(),
                 user: currentUser.name,
@@ -1375,6 +1412,11 @@
             // Vider le panier
             cart = [];
             updateCartUI();
+            
+            // Mettre à jour les notifications admin
+            if(isAdmin) {
+                updateNotificationCount();
+            }
         }
         
         // Déconnexion

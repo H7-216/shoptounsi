@@ -680,6 +680,7 @@
             padding: 1rem;
             border-radius: 5px;
             margin-bottom: 1rem;
+            position: relative;
         }
         
         .history-order h3 {
@@ -741,6 +742,31 @@
         .order-confirmation button:hover {
             transform: translateY(-3px);
             box-shadow: 0 5px 15px rgba(233, 69, 96, 0.4);
+        }
+        
+        /* Nouveau style pour le bouton de suppression */
+        .delete-order {
+            background: none;
+            border: none;
+            color: #ff6b6b;
+            cursor: pointer;
+            font-size: 1.2em;
+            transition: all 0.3s ease;
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+        }
+        
+        .delete-order:hover {
+            color: #ff2d55;
+            transform: scale(1.2);
+        }
+        
+        .history-order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
         }
         
         @keyframes fadeIn {
@@ -1177,7 +1203,9 @@
         
         // Mettre à jour le compteur de notifications
         function updateNotificationCount() {
-            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            if (!isAdmin) return;
+            
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]';
             const lastNotified = localStorage.getItem('lastNotified') || 0;
             
             const newOrders = orders.filter(order => 
@@ -1191,7 +1219,7 @@
         function checkForNewOrders() {
             if(!isAdmin) return;
             
-            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]';
             const lastNotified = localStorage.getItem('lastNotified') || 0;
             
             const newOrders = orders.filter(order => 
@@ -1249,14 +1277,17 @@
             const modal = document.getElementById('orderHistoryModal');
             const historyList = document.getElementById('historyList');
             
-            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]';
             
             if (orders.length === 0) {
                 historyList.innerHTML = '<p>Aucune commande enregistrée.</p>';
             } else {
                 historyList.innerHTML = orders.map(order => `
-                    <div class="history-order">
-                        <h3>Commande #${order.id} - ${new Date(order.date).toLocaleString()}</h3>
+                    <div class="history-order" data-id="${order.id}">
+                        <div class="history-order-header">
+                            <h3>Commande #${order.id} - ${new Date(order.date).toLocaleString()}</h3>
+                            ${isAdmin ? '<button class="delete-order" onclick="deleteOrder(' + order.id + ')">🗑️</button>' : ''}
+                        </div>
                         <div>Client: ${order.user}</div>
                         <div>Statut: ${order.status || 'En traitement'}</div>
                         <div>Articles:</div>
@@ -1273,6 +1304,23 @@
             
             modal.style.display = 'flex';
             closeNotif();
+        }
+        
+        // Supprimer une commande (uniquement pour l'admin)
+        function deleteOrder(orderId) {
+            if (!isAdmin) return;
+            
+            if(!confirm("Voulez-vous vraiment supprimer cette commande ? Cette action est irréversible.")) {
+                return;
+            }
+            
+            let orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            orders = orders.filter(order => order.id !== orderId);
+            localStorage.setItem('orders', JSON.stringify(orders));
+            
+            // Mettre à jour l'affichage
+            showFullOrderHistory();
+            updateNotificationCount();
         }
         
         // Fermer l'historique des commandes
@@ -1390,7 +1438,7 @@
             }
             
             // Créer la commande
-            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]';
             const newOrder = {
                 id: Date.now(),
                 user: currentUser.name,

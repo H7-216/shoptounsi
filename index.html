@@ -1042,7 +1042,7 @@
         let isAdmin = false;
         
         // Stockage des utilisateurs
-        const users = [
+        let users = [
             {
                 name: "Admin",
                 email: "admin@ashstore.com",
@@ -1054,9 +1054,26 @@
         // Charger les utilisateurs depuis le localStorage
         function loadUsers() {
             const savedUsers = localStorage.getItem('users');
-            if (savedUsers) {
-                users.push(...JSON.parse(savedUsers));
+            if (savedUsers && savedUsers !== 'undefined') {
+                try {
+                    const parsedUsers = JSON.parse(savedUsers);
+                    if (Array.isArray(parsedUsers)) {
+                        // On conserve l'admin de base et on ajoute les autres utilisateurs
+                        users = [
+                            users[0], // Garde toujours l'admin de base
+                            ...parsedUsers.filter(u => u.email !== "admin@ashstore.com")
+                        ];
+                    }
+                } catch (e) {
+                    console.error("Erreur de parsing des utilisateurs:", e);
+                }
             }
+        }
+        
+        // Sauvegarder les utilisateurs (sauf l'admin)
+        function saveUsers() {
+            const usersToSave = users.filter(user => !user.isAdmin);
+            localStorage.setItem('users', JSON.stringify(usersToSave));
         }
         
         // DOM Elements
@@ -1165,7 +1182,7 @@
                 };
                 
                 users.push(newUser);
-                localStorage.setItem('users', JSON.stringify(users.filter(u => !u.isAdmin)));
+                saveUsers();
                 
                 currentUser = { 
                     name: name, 
@@ -1205,7 +1222,7 @@
         function updateNotificationCount() {
             if (!isAdmin) return;
             
-            const orders = JSON.parse(localStorage.getItem('orders') || '[]';
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
             const lastNotified = localStorage.getItem('lastNotified') || 0;
             
             const newOrders = orders.filter(order => 
@@ -1219,7 +1236,7 @@
         function checkForNewOrders() {
             if(!isAdmin) return;
             
-            const orders = JSON.parse(localStorage.getItem('orders') || '[]';
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
             const lastNotified = localStorage.getItem('lastNotified') || 0;
             
             const newOrders = orders.filter(order => 
@@ -1277,7 +1294,7 @@
             const modal = document.getElementById('orderHistoryModal');
             const historyList = document.getElementById('historyList');
             
-            const orders = JSON.parse(localStorage.getItem('orders') || '[]';
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
             
             if (orders.length === 0) {
                 historyList.innerHTML = '<p>Aucune commande enregistrée.</p>';
@@ -1438,7 +1455,7 @@
             }
             
             // Créer la commande
-            const orders = JSON.parse(localStorage.getItem('orders') || '[]';
+            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
             const newOrder = {
                 id: Date.now(),
                 user: currentUser.name,

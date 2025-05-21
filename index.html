@@ -606,6 +606,13 @@
             margin-bottom: 5px;
         }
         
+        #admin-notif .customer-info {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+            font-size: 0.9em;
+        }
+        
         #admin-notif .notif-buttons {
             display: flex;
             gap: 10px;
@@ -699,6 +706,12 @@
             margin-top: 0.5rem;
             border-top: 1px solid #444;
             padding-top: 0.5rem;
+        }
+        
+        .history-order .customer-details {
+            margin-top: 0.5rem;
+            font-size: 0.9em;
+            color: #aaa;
         }
 
         /* Confirmation de commande */
@@ -845,6 +858,7 @@
     <div id="admin-notif" style="display:none;">
         <div id="notif-text"></div>
         <div class="order-details" id="order-details"></div>
+        <div class="customer-info" id="customer-info"></div>
         <div class="notif-buttons">
             <button onclick="showFullOrderHistory()" class="history-btn">Voir l'historique</button>
             <button onclick="closeNotif()" class="close-btn">× Fermer</button>
@@ -926,6 +940,7 @@
                     <h3>Informations de livraison</h3>
                     <form id="deliveryForm">
                         <input type="text" placeholder="Nom complet" required>
+                        <input type="email" placeholder="Email" required>
                         <input type="text" placeholder="Adresse" required>
                         <input type="text" placeholder="Complément d'adresse">
                         <div class="form-row">
@@ -1257,6 +1272,7 @@
             const notif = document.getElementById('admin-notif');
             const notifText = document.getElementById('notif-text');
             const orderDetails = document.getElementById('order-details');
+            const customerInfo = document.getElementById('customer-info');
             
             notifText.innerHTML = `<strong>Nouvelle commande de ${order.user}</strong>`;
             
@@ -1278,6 +1294,15 @@
             
             orderDetails.innerHTML = detailsHTML;
             
+            // Ajout des informations de contact du client
+            let customerHTML = '<div class="customer-info">';
+            customerHTML += '<strong>Coordonnées client:</strong>';
+            customerHTML += `<div>Email: ${order.customerEmail}</div>`;
+            customerHTML += `<div>Téléphone: ${order.customerPhone}</div>`;
+            customerHTML += '</div>';
+            
+            customerInfo.innerHTML = customerHTML;
+            
             notif.style.display = 'block';
             notif.style.animation = 'fadeIn 0.5s forwards';
             
@@ -1286,7 +1311,7 @@
                 setTimeout(() => {
                     notif.style.display = 'none';
                 }, 500);
-            }, 8000);
+            }, 10000); // Augmentation du temps d'affichage à 10 secondes
         }
         
         // Afficher l'historique complet des commandes
@@ -1306,6 +1331,11 @@
                             ${isAdmin ? '<button class="delete-order" onclick="deleteOrder(' + order.id + ')">🗑️</button>' : ''}
                         </div>
                         <div>Client: ${order.user}</div>
+                        <div class="customer-details">
+                            <div>Email: ${order.customerEmail}</div>
+                            <div>Téléphone: ${order.customerPhone}</div>
+                            <div>Adresse: ${order.customerAddress}, ${order.customerPostalCode} ${order.customerCity}</div>
+                        </div>
                         <div>Statut: ${order.status || 'En traitement'}</div>
                         <div>Articles:</div>
                         ${order.items.map(item => `
@@ -1364,7 +1394,7 @@
                 Votre commande <strong>#${order.id}</strong> a bien été enregistrée.<br>
                 Montant total: <strong>${order.total.toFixed(2)}€</strong><br>
                 Statut: <strong>${order.status}</strong><br><br>
-                Vous recevrez un email de confirmation à l'adresse <strong>${currentUser.email}</strong>.
+                Vous recevrez un email de confirmation à l'adresse <strong>${order.customerEmail}</strong>.
             `;
             
             confirmation.style.display = 'block';
@@ -1454,11 +1484,24 @@
                 return;
             }
             
+            // Récupérer les informations de livraison
+            const formData = new FormData(form);
+            const customerEmail = formData.get('email');
+            const customerPhone = formData.get('tel');
+            const customerAddress = formData.get('address');
+            const customerPostalCode = formData.get('postalCode');
+            const customerCity = formData.get('city');
+            
             // Créer la commande
             const orders = JSON.parse(localStorage.getItem('orders') || '[]');
             const newOrder = {
                 id: Date.now(),
                 user: currentUser.name,
+                customerEmail: customerEmail,
+                customerPhone: customerPhone,
+                customerAddress: customerAddress,
+                customerPostalCode: customerPostalCode,
+                customerCity: customerCity,
                 items: [...cart],
                 date: new Date().toISOString(),
                 total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + 4.99,

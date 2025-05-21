@@ -939,15 +939,15 @@
                 <div class="checkout-form">
                     <h3>Informations de livraison</h3>
                     <form id="deliveryForm">
-                        <input type="text" placeholder="Nom complet" required>
-                        <input type="email" placeholder="Email" required>
-                        <input type="text" placeholder="Adresse" required>
-                        <input type="text" placeholder="Complément d'adresse">
+                        <input type="text" name="customerName" placeholder="Nom complet" required>
+                        <input type="email" name="customerEmail" placeholder="Email" required>
+                        <input type="text" name="customerAddress" placeholder="Adresse" required>
+                        <input type="text" name="customerAddress2" placeholder="Complément d'adresse">
                         <div class="form-row">
-                            <input type="text" placeholder="Code postal" required>
-                            <input type="text" placeholder="Ville" required>
+                            <input type="text" name="customerPostalCode" placeholder="Code postal" required>
+                            <input type="text" name="customerCity" placeholder="Ville" required>
                         </div>
-                        <input type="tel" placeholder="Téléphone" required>
+                        <input type="tel" name="customerPhone" placeholder="Téléphone" required>
                         
                         <h3>Méthode de paiement</h3>
                         <div class="payment-methods">
@@ -1299,6 +1299,7 @@
             customerHTML += '<strong>Coordonnées client:</strong>';
             customerHTML += `<div>Email: ${order.customerEmail}</div>`;
             customerHTML += `<div>Téléphone: ${order.customerPhone}</div>`;
+            customerHTML += `<div>Adresse: ${order.customerAddress}, ${order.customerPostalCode} ${order.customerCity}</div>`;
             customerHTML += '</div>';
             
             customerInfo.innerHTML = customerHTML;
@@ -1486,17 +1487,18 @@
             
             // Récupérer les informations de livraison
             const formData = new FormData(form);
-            const customerEmail = formData.get('email');
-            const customerPhone = formData.get('tel');
-            const customerAddress = formData.get('address');
-            const customerPostalCode = formData.get('postalCode');
-            const customerCity = formData.get('city');
+            const customerName = formData.get('customerName');
+            const customerEmail = formData.get('customerEmail');
+            const customerPhone = formData.get('customerPhone');
+            const customerAddress = formData.get('customerAddress');
+            const customerPostalCode = formData.get('customerPostalCode');
+            const customerCity = formData.get('customerCity');
             
             // Créer la commande
             const orders = JSON.parse(localStorage.getItem('orders') || '[]');
             const newOrder = {
                 id: Date.now(),
-                user: currentUser.name,
+                user: customerName || currentUser.name,
                 customerEmail: customerEmail,
                 customerPhone: customerPhone,
                 customerAddress: customerAddress,
